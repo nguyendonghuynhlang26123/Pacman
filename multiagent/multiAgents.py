@@ -171,7 +171,42 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        agent_num = gameState.getNumAgents()
+        ActEvalScoreList = []
+
+        """remove stop action from movement list"""
+        def removeStopAct(List):
+            return [_ for _ in List if _ != 'Stop']
+
+        def alphabeta(node, itercnt, a, b):
+            """Ending condition"""
+            if itercnt >= self.depth * agent_num or node.isWin() or node.isLose():
+                """return eval score get from result"""
+                return self.evaluationFunction(node)
+            if itercnt % agent_num != 0:  # ghost turn (Min node)
+                res = 1e10
+                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                    successor = node.generateSuccessor(itercnt % agent_num, act)
+                    res = min(res, alphabeta(successor, itercnt + 1, a, b))
+                    b = min(b, res)
+                    if b < a:
+                        break   # Prune this branch
+                return res
+            else:  # Pacman turn (Max node)
+                res = -1e10
+                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                    successor = node.generateSuccessor(itercnt % agent_num, act)
+                    res = max(res, alphabeta(successor, itercnt + 1, a, b))
+                    a = max(a, res)
+                    if itercnt == 0:
+                        ActEvalScoreList.append(res)  # add peak node to eval score list
+                    if b < a:
+                        break   # Prune this branch
+                return res
+
+        res = alphabeta(gameState, 0, -1e12, 1e12)
+        # Get act with max eval score from act eval list to return
+        return removeStopAct(gameState.getLegalActions(0))[ActEvalScoreList.index(max(ActEvalScoreList))]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
