@@ -101,7 +101,7 @@ class MultiAgentSearchAgent(Agent):
       is another abstract class.
     """
 
-    def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
+    def __init__(self, evalFn = 'betterEvaluationFunction', depth='2'):
         self.index = 0 # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
@@ -221,7 +221,35 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        agent_num = gameState.getNumAgents()
+        ActEvalScoreList = []
+
+        def removeStopAct(List):
+            return [_ for _ in List if _ != 'Stop']
+
+        def expectimax(node, itercnt):
+            if itercnt >= self.depth * agent_num or node.isWin() or node.isLose():
+                return self.evaluationFunction(node)
+            if itercnt % agent_num != 0:  # Ghost node
+                successorScoreList = []
+                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                    successor = node.generateSuccessor(itercnt % agent_num, act)
+                    res = expectimax(successor, itercnt + 1)
+                    successorScoreList.append(res)
+                avgscore = sum([score / len(successorScoreList) for score in successorScoreList])
+                return avgscore
+            else:  # Pacman max
+                res = -1e10
+                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                    successor = node.generateSuccessor(itercnt % agent_num, act)
+                    res = max(res, expectimax(successor, itercnt + 1))
+                    if itercnt == 0:
+                        ActEvalScoreList.append(res)
+                return res
+
+        result = expectimax(gameState, 0)
+        return removeStopAct(gameState.getLegalActions(0))[ActEvalScoreList.index(max(ActEvalScoreList))]
+
 
 def betterEvaluationFunction(currentGameState):
     """
@@ -231,8 +259,31 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    def foodheuristic(gameState):
+        food_dis = []
+        # Find closest food using manhattan distance
+        for food in gameState.getFood().asList():
+            food_dis.append(1/manhattanDistance(gameState.getPacmanPosition(), food))
+        if len(food_dis) > 0:
+            return max(food_dis)
+        else:
+            return 0
 
+    # This is for when pacman is out of hope and he must end his life as soon as possible to reserve his point
+    # Testing...
+    def bestendingheuristic(gameState):
+        ghost_dis = 1e6
+        # Find closest ghost using manhattan distance
+        for ghost in gameState.getGhostStates():
+            ghost_dis = min(manhattanDistance(gameState.getPacmanPosition(), ghost.getPosition()), ghost_dis)
+        score = -pow(ghost_dis, 2)
+        if gameState.isLose():
+            score = 1e6
+        return score
+
+    score = currentGameState.getScore()
+    foodscore = foodheuristic(currentGameState)
+    return score + foodscore
 # Abbreviation
 better = betterEvaluationFunction
 
