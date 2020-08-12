@@ -9,4 +9,4 @@ You should comment out all lines in the file except the one
 you wan to run!
 """
 
-pacman.main('python pacman.py -l mediumMaze -p SearchAgent -a fn=dfs')
+pacman.main('python pacman.py -l minimaxClassic -p ExpectimaxAgent  -f 0.1')

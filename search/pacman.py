@@ -57,6 +57,7 @@ import graphicsDisplay
 ###################################################
 # YOUR INTERFACE TO THE PACMAN WORLD: A GameState #
 ###################################################
+FOOD_SCORE = 20
 
 
 class GameState:
@@ -393,7 +394,7 @@ class PacmanRules:
         # Eat food
         if state.data.food[x][y]:
             # EDITED
-            state.data.scoreChange += 20
+            state.data.scoreChange += FOOD_SCORE
             state.data.food = state.data.food.copy()
             state.data.food[x][y] = False
             state.data._foodEaten = position
@@ -423,26 +424,29 @@ class GhostRules:
 
     def getLegalActions(state, ghostIndex):
         """
-        Ghosts cannot stop, and cannot turn around unless they
+        Ghosts cannot turn around unless they
         reach a dead end, but can turn 90 degrees at intersections.
         """
         conf = state.getGhostState(ghostIndex).configuration
         possibleActions = Actions.getPossibleActions(
             conf, state.data.layout.walls)
         reverse = Actions.reverseDirection(conf.direction)
-        if Directions.STOP in possibleActions:
-            possibleActions.remove(Directions.STOP)
-        if reverse in possibleActions and len(possibleActions) > 1:
+        # if Directions.STOP in possibleActions:
+        #    possibleActions.remove(Directions.STOP)
+        # alway exists 'Stop'
+        if reverse in possibleActions and len(possibleActions) > 2:
             possibleActions.remove(reverse)
         return possibleActions
 
     getLegalActions = staticmethod(getLegalActions)
 
     def applyAction(state, action, ghostIndex):
-
+        if (action == 'Stop'):
+            return None
         legal = GhostRules.getLegalActions(state, ghostIndex)
         if action not in legal:
-            raise Exception("Illegal ghost action " + str(action))
+            raise Exception("Illegal ghost action " +
+                            str(action))
 
         ghostState = state.data.agentStates[ghostIndex]
         speed = GhostRules.GHOST_SPEED
@@ -594,7 +598,6 @@ def readCommand(argv):
         default=1.0,
     )
     parser.add_option(
-        "-f",
         "--fixRandomSeed",
         action="store_true",
         dest="fixRandomSeed",
@@ -608,6 +611,7 @@ def readCommand(argv):
         help='Comma separated values sent to agent. e.g. "opt1=val1,opt2,opt3=val3"',
     )
     parser.add_option(
+        "-f",
         "--frameTime",
         dest="frameTime",
         type="float",

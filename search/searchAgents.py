@@ -41,18 +41,6 @@ import util
 import time
 import search
 
-
-class GoWestAgent(Agent):
-    "An agent that goes West until it can't."
-
-    def getAction(self, state):
-        "The agent receives a GameState (defined in pacman.py)."
-        if Directions.WEST in state.getLegalPacmanActions():
-            return Directions.WEST
-        else:
-            return Directions.STOP
-
-
 #######################################################
 # This portion is written for you, but will only work #
 #       after you fill in parts of search.py          #
@@ -268,35 +256,46 @@ class PositionSearchProblem(search.SearchProblem):
         return cost
 
 
-class StayEastSearchAgent(SearchAgent):
-    """
-    An agent for position search with a cost function that penalizes being in
-    positions on the West side of the board.
+class AvoidLazyGhostProblem(PositionSearchProblem):
+    def __init__(
+            self,
+            gameState,
+            costFn=lambda x: 1,
+            goal=(1, 1),
+            start=None,
+            warn=True,
+            visualize=True):
+        # Lazy Ghost is the ghost that does not move
+        self.lazy_ghosts = gameState.getGhostPositions()
 
-    The cost function for stepping into a position (x,y) is 1/2^x.
-    """
+        super(AvoidLazyGhostProblem, self).__init__(
+            gameState, costFn, goal, start, warn, visualize)
+
+    def getCostOfActions(self, actions):
+        factor = 100
+        if actions == None:
+            return 999999
+        x, y = self.getStartState()
+        cost = 0
+        for action in actions:
+            # Check figure out the next state and see whether its' legal
+            dx, dy = Actions.directionToVector(action)
+            x, y = int(x + dx), int(y + dy)
+            if self.walls[x][y]:
+                return 99999
+            cost += self.costFn((x, y))
+            if (x, y) in self.lazy_ghosts:
+                cost *= factor
+
+        return cost
+
+
+class FindFoodSafelyAgent(SearchAgent):
 
     def __init__(self):
         self.searchFunction = search.uniformCostSearch
-        def costFn(pos): return 0.5 ** pos[0]
-        self.searchType = lambda state: PositionSearchProblem(
-            state, costFn, (1, 1), None, False
-        )
-
-
-class StayWestSearchAgent(SearchAgent):
-    """
-    An agent for position search with a cost function that penalizes being in
-    positions on the East side of the board.
-
-    The cost function for stepping into a position (x,y) is 2^x.
-    """
-
-    def __init__(self):
-        self.searchFunction = search.uniformCostSearch
-        def costFn(pos): return 2 ** pos[0]
-        self.searchType = lambda state: PositionSearchProblem(state, costFn)
-
+        def costFn(pos): return 1
+        self.searchType = lambda state: AvoidLazyGhostProblem(state, costFn)
 
 def manhattanHeuristic(position, problem, info={}):
     "The Manhattan distance heuristic for a PositionSearchProblem"
@@ -565,7 +564,8 @@ class ClosestDotSearchAgent(SearchAgent):
                     raise Exception(
                         "findPathToClosestDot returned an illegal move: %s!\n%s" % t
                     )
-                currentState = currentState.generateSuccessor(0, action)
+                currentState = currentState.generateSuccessor(
+                    0, action)
         self.actionIndex = 0
         print("Path found with cost %d." % len(self.actions))
 
@@ -579,6 +579,43 @@ class ClosestDotSearchAgent(SearchAgent):
 
         "*** YOUR CODE HERE ***"
         return search.bfs(problem)
+
+
+class AnyFoodSearchProblem(PositionSearchProblem):
+    """
+    A search problem for finding a path to any food.
+
+    This search problem is just like the PositionSearchProblem, but has a
+    different goal test, which you need to fill in below.  The state space and
+    successor function do not need to be changed.
+
+    The class definition above, AnyFoodSearchProblem(PositionSearchProblem),
+    inherits the methods of the PositionSearchProblem.
+
+    You can use this search problem to help you fill in the findPathToClosestDot
+    method.
+    """
+
+    def __init__(self, gameState):
+        "Stores information from the gameState.  You don't need to change this."
+        # Store the food for later reference
+        self.food = gameState.getFood()
+
+        # Store info for the PositionSearchProblem (no need to change this)
+        self.walls = gameState.getWalls()
+        self.startState = gameState.getPacmanPosition()
+        self.costFn = lambda x: 1
+        self._visited, self._visitedlist, self._expanded = {}, [], 0  # DO NOT CHANGE
+
+    def isGoalState(self, state):
+        """
+        The state is Pacman's position. Fill this in with a goal test that will
+        complete the problem definition.
+        """
+
+        "*** YOUR CODE HERE ***"
+        foodList = self.food.asList()
+        return state in foodList
 
 
 def mazeDistance(point1, point2, gameState):

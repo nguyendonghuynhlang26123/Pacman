@@ -20,6 +20,10 @@ from util import manhattanDistance
 import util
 
 
+def removeStopAct(List):
+    return [_ for _ in List if _ != 'Stop']
+
+
 class GhostAgent(Agent):
     def __init__(self, index):
         self.index = index
@@ -41,9 +45,10 @@ class RandomGhost(GhostAgent):
 
     def getDistribution(self, state):
         dist = util.Counter()
-        for a in state.getLegalActions(self.index):
+        for a in removeStopAct(state.getLegalActions(self.index)):
             dist[a] = 1.0
         dist.normalize()
+        #print(state.getLegalActions(self.index), dist)
         return dist
 
 
@@ -58,7 +63,7 @@ class DirectionalGhost(GhostAgent):
     def getDistribution(self, state):
         # Read variables from state
         ghostState = state.getGhostState(self.index)
-        legalActions = state.getLegalActions(self.index)
+        legalActions = removeStopAct(state.getLegalActions(self.index))
         pos = state.getGhostPosition(self.index)
         isScared = ghostState.scaredTimer > 0
 
@@ -90,4 +95,13 @@ class DirectionalGhost(GhostAgent):
         for a in legalActions:
             dist[a] += (1-bestProb) / len(legalActions)
         dist.normalize()
+        return dist
+
+
+class LazyGhost(GhostAgent):
+    "A ghost that chooses a legal action uniformly at random."
+
+    def getDistribution(self, state):
+        dist = util.Counter()
+        dist['Stop'] = 1.0
         return dist
