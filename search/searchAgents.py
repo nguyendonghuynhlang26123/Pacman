@@ -80,13 +80,14 @@ class SearchAgent(Agent):
         self,
         fn="depthFirstSearch",
         prob="PositionSearchProblem",
-        heuristic="nullHeuristic",
+        heuristic="manhattanHeuristic",
     ):
         # Warning: some advanced Python magic is employed below to find the right functions and problems
 
         # Get the search function from the name and heuristic
         if fn not in dir(search):
-            raise AttributeError(fn + " is not a search function in search.py.")
+            raise AttributeError(
+                fn + " is not a search function in search.py.")
         func = getattr(search, fn)
         if "heuristic" not in func.__code__.co_varnames:
             print("[SearchAgent] using function " + fn)
@@ -100,7 +101,8 @@ class SearchAgent(Agent):
                 raise AttributeError(
                     heuristic + " is not a function in searchAgents.py or search.py."
                 )
-            print("[SearchAgent] using function %s and heuristic %s" % (fn, heuristic))
+            print("[SearchAgent] using function %s and heuristic %s" %
+                  (fn, heuristic))
             # Note: this bit of Python trickery combines the search algorithm and the heuristic
             self.searchFunction = lambda x: func(x, heuristic=heur)
 
@@ -204,7 +206,8 @@ class PositionSearchProblem(search.SearchProblem):
             import __main__
 
             if "_display" in dir(__main__):
-                if "drawExpandedCells" in dir(__main__._display):  # @UndefinedVariable
+                # @UndefinedVariable
+                if "drawExpandedCells" in dir(__main__._display):
                     __main__._display.drawExpandedCells(
                         self._visitedlist
                     )  # @UndefinedVariable
@@ -275,7 +278,7 @@ class StayEastSearchAgent(SearchAgent):
 
     def __init__(self):
         self.searchFunction = search.uniformCostSearch
-        costFn = lambda pos: 0.5 ** pos[0]
+        def costFn(pos): return 0.5 ** pos[0]
         self.searchType = lambda state: PositionSearchProblem(
             state, costFn, (1, 1), None, False
         )
@@ -291,7 +294,7 @@ class StayWestSearchAgent(SearchAgent):
 
     def __init__(self):
         self.searchFunction = search.uniformCostSearch
-        costFn = lambda pos: 2 ** pos[0]
+        def costFn(pos): return 2 ** pos[0]
         self.searchType = lambda state: PositionSearchProblem(state, costFn)
 
 
@@ -423,7 +426,8 @@ def cornersHeuristic(state, problem):
     admissible (as well as consistent).
     """
     corners = problem.corners  # These are the corner coordinates
-    walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+    # These are the walls of the maze, as a Grid (game.py)
+    walls = problem.walls
 
     "*** YOUR CODE HERE ***"
     return 0  # Default to trivial solution
@@ -433,7 +437,8 @@ class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
 
     def __init__(self):
-        self.searchFunction = lambda prob: search.aStarSearch(prob, cornersHeuristic)
+        self.searchFunction = lambda prob: search.aStarSearch(
+            prob, cornersHeuristic)
         self.searchType = CornersProblem
 
 
@@ -501,7 +506,8 @@ class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
 
     def __init__(self):
-        self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
+        self.searchFunction = lambda prob: search.aStarSearch(
+            prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
 
@@ -535,7 +541,10 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    foods = foodGrid.asList()
+    if not foods:
+        return 0
+    return max([mazeDistance(position, food, problem.startingGameState) for food in foods])
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -566,50 +575,10 @@ class ClosestDotSearchAgent(SearchAgent):
         gameState.
         """
         # Here are some useful elements of the startState
-        startPosition = gameState.getPacmanPosition()
-        food = gameState.getFood()
-        walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
-
-class AnyFoodSearchProblem(PositionSearchProblem):
-    """
-    A search problem for finding a path to any food.
-
-    This search problem is just like the PositionSearchProblem, but has a
-    different goal test, which you need to fill in below.  The state space and
-    successor function do not need to be changed.
-
-    The class definition above, AnyFoodSearchProblem(PositionSearchProblem),
-    inherits the methods of the PositionSearchProblem.
-
-    You can use this search problem to help you fill in the findPathToClosestDot
-    method.
-    """
-
-    def __init__(self, gameState):
-        "Stores information from the gameState.  You don't need to change this."
-        # Store the food for later reference
-        self.food = gameState.getFood()
-
-        # Store info for the PositionSearchProblem (no need to change this)
-        self.walls = gameState.getWalls()
-        self.startState = gameState.getPacmanPosition()
-        self.costFn = lambda x: 1
-        self._visited, self._visitedlist, self._expanded = {}, [], 0  # DO NOT CHANGE
-
-    def isGoalState(self, state):
-        """
-        The state is Pacman's position. Fill this in with a goal test that will
-        complete the problem definition.
-        """
-        x, y = state
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.bfs(problem)
 
 
 def mazeDistance(point1, point2, gameState):

@@ -79,3 +79,12 @@ class DirectionalGhost( GhostAgent ):
         for a in legalActions: dist[a] += ( 1-bestProb ) / len(legalActions)
         dist.normalize()
         return dist
+
+class FixedGhost( GhostAgent ):
+    "A ghost that do nothing"
+    def getDistribution( self, state ):
+        dist = util.Counter()
+        print(dist)
+        for a in state.getLegalActions( self.index ): dist[a] = 1.0
+        dist.normalize()
+        return dist

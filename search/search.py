@@ -64,17 +64,6 @@ class SearchProblem:
         util.raiseNotDefined()
 
 
-def tinyMazeSearch(problem):
-    """
-    Returns a sequence of moves that solves tinyMaze.  For any other maze, the
-    sequence of moves will be incorrect, so only use this for tinyMaze.
-    """
-
-    s = Directions.SOUTH
-    w = Directions.WEST
-    return [s, s, w, s, w, w, s, w]
-
-
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
