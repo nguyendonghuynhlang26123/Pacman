@@ -11,14 +11,15 @@ you wan to run!
 """
 
 # pacman
-#pacman.main('python pacman.py')
-#pacman.main('python pacman.py -p ReflexAgent -l testClassic')
-pacman.main('python pacman.py --frameTime 0 -p ReflexAgent -k 2')
-#pacman.main('python pacman.py -p MinimaxAgent -l minimaxClassic -a depth=4')
+# pacman.main('python pacman.py')
+# pacman.main('python pacman.py -p ReflexAgent -l testClassic')
+pacman.main("python pacman.py --frameTime 0 -p ReflexAgent -k 2")
+# pacman.main('python pacman.py -p MinimaxAgent -l minimaxClassic -a depth=4')
 
 
 # autograder
-#autograder.run('python autograder.py')
-#autograder.run('python autograder -q q1')
-#autograder.run('python autograder.py -q q1 --no-graphics')
-#autograder.run('python autograder.py -t test_cases/q2/0-small-tree')
+# autograder.run('python autograder.py')
+# autograder.run('python autograder -q q1')
+# autograder.run('python autograder.py -q q1 --no-graphics')
+# autograder.run('python autograder.py -t test_cases/q2/0-small-tree')
+

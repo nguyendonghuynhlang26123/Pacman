@@ -86,8 +86,7 @@ class SearchAgent(Agent):
 
         # Get the search function from the name and heuristic
         if fn not in dir(search):
-            raise AttributeError(
-                fn + " is not a search function in search.py.")
+            raise AttributeError(fn + " is not a search function in search.py.")
         func = getattr(search, fn)
         if "heuristic" not in func.__code__.co_varnames:
             print("[SearchAgent] using function " + fn)
@@ -101,8 +100,7 @@ class SearchAgent(Agent):
                 raise AttributeError(
                     heuristic + " is not a function in searchAgents.py or search.py."
                 )
-            print("[SearchAgent] using function %s and heuristic %s" %
-                  (fn, heuristic))
+            print("[SearchAgent] using function %s and heuristic %s" % (fn, heuristic))
             # Note: this bit of Python trickery combines the search algorithm and the heuristic
             self.searchFunction = lambda x: func(x, heuristic=heur)
 
@@ -274,18 +272,20 @@ class PositionSearchProblem(search.SearchProblem):
 
 class AvoidLazyGhostProblem(PositionSearchProblem):
     def __init__(
-            self,
-            gameState,
-            costFn=lambda x: 1,
-            goal=(1, 1),
-            start=None,
-            warn=True,
-            visualize=True):
+        self,
+        gameState,
+        costFn=lambda x: 1,
+        goal=(1, 1),
+        start=None,
+        warn=True,
+        visualize=True,
+    ):
         # Lazy Ghost is the ghost that does not move
         self.lazy_ghosts = gameState.getGhostPositions()
 
         super(AvoidLazyGhostProblem, self).__init__(
-            gameState, costFn, goal, start, warn, visualize)
+            gameState, costFn, goal, start, warn, visualize
+        )
 
     def getCostOfActions(self, actions):
         factor = 100
@@ -477,8 +477,7 @@ class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
 
     def __init__(self):
-        self.searchFunction = lambda prob: search.aStarSearch(
-            prob, cornersHeuristic)
+        self.searchFunction = lambda prob: search.aStarSearch(prob, cornersHeuristic)
         self.searchType = CornersProblem
 
 
@@ -546,8 +545,7 @@ class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
 
     def __init__(self):
-        self.searchFunction = lambda prob: search.aStarSearch(
-            prob, foodHeuristic)
+        self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
 
@@ -584,7 +582,9 @@ def foodHeuristic(state, problem):
     foods = foodGrid.asList()
     if not foods:
         return 0
-    return max([mazeDistance(position, food, problem.startingGameState) for food in foods])
+    return max(
+        [mazeDistance(position, food, problem.startingGameState) for food in foods]
+    )
 
 
 class ClosestDotSearchAgent(SearchAgent):
@@ -605,8 +605,7 @@ class ClosestDotSearchAgent(SearchAgent):
                     raise Exception(
                         "findPathToClosestDot returned an illegal move: %s!\n%s" % t
                     )
-                currentState = currentState.generateSuccessor(
-                    0, action)
+                currentState = currentState.generateSuccessor(0, action)
         self.actionIndex = 0
         print("Path found with cost %d." % len(self.actions))
 

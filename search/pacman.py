@@ -54,10 +54,10 @@ import time
 import random
 import os
 import graphicsDisplay
+
 ###################################################
 # YOUR INTERFACE TO THE PACMAN WORLD: A GameState #
 ###################################################
-FOOD_SCORE = 20
 
 
 class GameState:
@@ -300,8 +300,8 @@ class GameState:
 
 SCARED_TIME = 40  # Moves ghosts are scared
 COLLISION_TOLERANCE = 0.7  # How close ghosts must be to Pacman to kill
-# EDITED
-TIME_PENALTY = 0  # Number of points lost each round
+TIME_PENALTY = 0  # Number of points lost each round # EDITED
+FOOD_SCORE = 20
 
 
 class ClassicGameRules:
@@ -314,12 +314,7 @@ class ClassicGameRules:
         self.timeout = timeout
 
     def newGame(
-        self,
-        layout,
-        pacmanAgent,
-        ghostAgents,
-        display,
-        catchExceptions=False,
+        self, layout, pacmanAgent, ghostAgents, display, catchExceptions=False,
     ):
         agents = [pacmanAgent] + ghostAgents[: layout.getNumGhosts()]
         initState = GameState()
@@ -401,8 +396,7 @@ class PacmanRules:
 
         # Update Configuration
         vector = Actions.directionToVector(action, PacmanRules.PACMAN_SPEED)
-        pacmanState.configuration = pacmanState.configuration.generateSuccessor(
-            vector)
+        pacmanState.configuration = pacmanState.configuration.generateSuccessor(vector)
 
         # Eat
         next = pacmanState.configuration.getPosition()
@@ -415,12 +409,10 @@ class PacmanRules:
 
     def consume(position, state):
         x, y = position
-        # EDITED
-        state.data.scoreChange -= 1
+        state.data.scoreChange -= 1  # EDITED
         # Eat food
         if state.data.food[x][y]:
-            # EDITED
-            state.data.scoreChange += FOOD_SCORE
+            state.data.scoreChange += FOOD_SCORE  # EDITED
             state.data.food = state.data.food.copy()
             state.data.food[x][y] = False
             state.data._foodEaten = position
@@ -454,8 +446,7 @@ class GhostRules:
         reach a dead end, but can turn 90 degrees at intersections.
         """
         conf = state.getGhostState(ghostIndex).configuration
-        possibleActions = Actions.getPossibleActions(
-            conf, state.data.layout.walls)
+        possibleActions = Actions.getPossibleActions(conf, state.data.layout.walls)
         reverse = Actions.reverseDirection(conf.direction)
         # if Directions.STOP in possibleActions:
         #    possibleActions.remove(Directions.STOP)
@@ -467,28 +458,25 @@ class GhostRules:
     getLegalActions = staticmethod(getLegalActions)
 
     def applyAction(state, action, ghostIndex):
-        if (action == 'Stop'):
+        if action == "Stop":
             return None
         legal = GhostRules.getLegalActions(state, ghostIndex)
         if action not in legal:
-            raise Exception("Illegal ghost action " +
-                            str(action))
+            raise Exception("Illegal ghost action " + str(action))
 
         ghostState = state.data.agentStates[ghostIndex]
         speed = GhostRules.GHOST_SPEED
         if ghostState.scaredTimer > 0:
             speed /= 2.0
         vector = Actions.directionToVector(action, speed)
-        ghostState.configuration = ghostState.configuration.generateSuccessor(
-            vector)
+        ghostState.configuration = ghostState.configuration.generateSuccessor(vector)
 
     applyAction = staticmethod(applyAction)
 
     def decrementTimer(ghostState):
         timer = ghostState.scaredTimer
         if timer == 1:
-            ghostState.configuration.pos = nearestPoint(
-                ghostState.configuration.pos)
+            ghostState.configuration.pos = nearestPoint(ghostState.configuration.pos)
         ghostState.scaredTimer = max(0, timer - 1)
 
     decrementTimer = staticmethod(decrementTimer)
@@ -722,8 +710,7 @@ def loadAgent(pacman, nographics):
     for moduleDir in pythonPathDirs:
         if not os.path.isdir(moduleDir):
             continue
-        moduleNames = [f for f in os.listdir(
-            moduleDir) if f.endswith("gents.py")]
+        moduleNames = [f for f in os.listdir(moduleDir) if f.endswith("gents.py")]
         for modulename in moduleNames:
             try:
                 module = __import__(modulename[:-3])
@@ -735,18 +722,11 @@ def loadAgent(pacman, nographics):
                         "Using the keyboard requires graphics (not text display)"
                     )
                 return getattr(module, pacman)
-    raise Exception("The agent " + pacman +
-                    " is not specified in any *Agents.py.")
+    raise Exception("The agent " + pacman + " is not specified in any *Agents.py.")
 
 
 def runGames(
-    layout,
-    pacman,
-    ghosts,
-    display,
-    numGames,
-    catchExceptions=False,
-    timeout=30,
+    layout, pacman, ghosts, display, numGames, catchExceptions=False, timeout=30,
 ):
     import __main__
 
@@ -757,17 +737,23 @@ def runGames(
 
     for _ in range(numGames):
         gameDisplay = display
-        game = rules.newGame(
-            layout, pacman, ghosts, gameDisplay, catchExceptions
-        )
+        game = rules.newGame(layout, pacman, ghosts, gameDisplay, catchExceptions)
         game.run()
         games.append(game)
 
     scores = [game.state.getScore() for game in games]
     wins = [game.state.isWin() for game in games]
+<<<<<<< HEAD
     print(("Scores:       ", ", ".join([str(score) for score in scores])))
     print(("RESULT:       ", ", ".join(
         [["Loss", "Win"][int(w)] for w in wins])))
+=======
+    winRate = wins.count(True) / float(len(wins))
+    print("Average Score:", sum(scores) / float(len(scores)))
+    print("Scores:       ", ", ".join([str(score) for score in scores]))
+    print("Win Rate:      %d/%d (%.2f)" % (wins.count(True), len(wins), winRate))
+    print("Record:       ", ", ".join([["Loss", "Win"][int(w)] for w in wins]))
+>>>>>>> b52b29d1dcdb1efcbdde2579cdc967f773e2aeaa
 
     return games
 
@@ -793,9 +779,9 @@ if __name__ == "__main__":
 
     > python pacman.py --help
     """
-    #argv = ['-l', 'bigMaze', '-z', '.5', '-p', 'SearchAgent', '--frameTime', '0']
+    # argv = ['-l', 'bigMaze', '-z', '.5', '-p', 'SearchAgent', '--frameTime', '0']
     # print(sys.argv[1:])
-    #args = readCommand(argv)
+    # args = readCommand(argv)
     args = readCommand(sys.argv[1:])  # Get game components based on input
     runGames(**args)
 
