@@ -53,9 +53,9 @@ class RandomGhost(GhostAgent):
 
 
 class DirectionalGhost(GhostAgent):
-    "A ghost that prefers to rush Pacman, or flee when scared."
+    "A ghost that prefers to rush Pacman"
 
-    def __init__(self, index, prob_attack=0.9, prob_scaredFlee=0.8):
+    def __init__(self, index, prob_attack=0.8, prob_scaredFlee=0.8):
         self.index = index
         self.prob_attack = prob_attack
         self.prob_scaredFlee = prob_scaredFlee
@@ -83,7 +83,8 @@ class DirectionalGhost(GhostAgent):
             bestScore = max(distancesToPacman)
             bestProb = self.prob_scaredFlee
         else:
-            bestScore = min(distancesToPacman)
+            bestScore = min(
+                distancesToPacman) if distancesToPacman != [] else 0
             bestProb = self.prob_attack
         bestActions = [action for action, distance in zip(
             legalActions, distancesToPacman) if distance == bestScore]

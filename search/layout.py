@@ -175,6 +175,21 @@ def getLayout(name, back=2):
     return layout
 
 
+def generateMap(n, m, level=1, rate=0.7, numGhosts=0, numFoods=1):
+    from GM import generate_map
+    if level == 1:
+        numGhosts = 0
+        numFoods = 1
+    elif level == 2:
+        numFoods = 1
+    elif (level == 3 or level == 4) and numGhosts == 0:
+        numGhosts = 2
+        numFoods = 20
+    elif level > 4 or level <= 0:
+        raise ("Invalid generate level")
+    return Layout(generate_map(n, m, rate, numGhosts=numGhosts, numFoods=numFoods))
+
+
 def tryToLoad(fullname):
     if not os.path.exists(fullname):
         return tryToLoad

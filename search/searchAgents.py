@@ -41,6 +41,18 @@ import util
 import time
 import search
 
+
+class GoWestAgent(Agent):
+    "An agent that goes West until it can't."
+
+    def getAction(self, state):
+        "The agent receives a GameState (defined in pacman.py)."
+        if Directions.WEST in state.getLegalPacmanActions():
+            return Directions.WEST
+        else:
+            return Directions.STOP
+
+
 #######################################################
 # This portion is written for you, but will only work #
 #       after you fill in parts of search.py          #
@@ -136,6 +148,9 @@ class SearchAgent(Agent):
             self.actionIndex = 0
         i = self.actionIndex
         self.actionIndex += 1
+        if (self.actions == None):
+            print("Cannot find food!")
+            return Directions.STOP
         if i < len(self.actions):
             return self.actions[i]
         else:
@@ -173,12 +188,13 @@ class PositionSearchProblem(search.SearchProblem):
         self.startState = gameState.getPacmanPosition()
         if start != None:
             self.startState = start
-        self.goal = goal
         self.costFn = costFn
         self.visualize = visualize
-        if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*goal)):
-            print("Warning: this does not look like a regular search maze")
 
+        if gameState.getNumFood() != 1:
+            raise ("Just 1 food is allowed")
+
+        self.goal = gameState.getFood().asList()[0]
         # For display purposes
         self._visited, self._visitedlist, self._expanded = {}, [], 0  # DO NOT CHANGE
 
@@ -290,12 +306,37 @@ class AvoidLazyGhostProblem(PositionSearchProblem):
         return cost
 
 
-class FindFoodSafelyAgent(SearchAgent):
+class SafeSearchAgent(SearchAgent):
 
-    def __init__(self):
-        self.searchFunction = search.uniformCostSearch
+    def __init__(self,
+                 fn="uniformCostSearch",
+                 heuristic="manhattanHeuristic"):
+        if fn not in dir(search):
+            raise AttributeError(
+                fn + " is not a search function in search.py.")
+        func = getattr(search, fn)
+        if func == search.bfs or func == search.dfs:
+            raise AttributeError(
+                fn + " is not an appropriate search function for this solution")
+        if "heuristic" not in func.__code__.co_varnames:
+            print("[SafeSearchAgent] using function " + fn)
+            self.searchFunction = func
+        else:
+            if heuristic in globals().keys():
+                heur = globals()[heuristic]
+            elif heuristic in dir(search):
+                heur = getattr(search, heuristic)
+            else:
+                raise AttributeError(
+                    heuristic + " is not a function in searchAgents.py or search.py."
+                )
+            print("[SafeSearchAgent] using function %s and heuristic %s" %
+                  (fn, heuristic))
+            self.searchFunction = lambda x: func(x, heuristic=heur)
+
         def costFn(pos): return 1
         self.searchType = lambda state: AvoidLazyGhostProblem(state, costFn)
+
 
 def manhattanHeuristic(position, problem, info={}):
     "The Manhattan distance heuristic for a PositionSearchProblem"
@@ -637,3 +678,8 @@ def mazeDistance(point1, point2, gameState):
         gameState, start=point1, goal=point2, warn=False, visualize=False
     )
     return len(search.bfs(prob))
+
+
+# Abbreviations
+mHeur = manhattanHeuristic
+eHeur = euclideanHeuristic

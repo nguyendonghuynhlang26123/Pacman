@@ -200,6 +200,32 @@ class GameState:
         """
         return self.data.food
 
+    def getFoodSurroundingPacman(self, radius=2):
+        """
+            # # # # # <-- Food is in this square
+            # # # # #
+            # # P # # 
+            # # # F # 
+            # # # # F 
+        """
+        rows = self.data.food.height
+        cols = self.data.food.width
+
+        pacman_pos = self.getPacmanPosition()
+        result = []
+
+        def isValid(a, limit): return a >= 0 and a < limit
+        for i in range(-radius, radius + 1):
+            for j in range(-radius, radius + 1):
+                new_pos_x = pacman_pos[0] + i
+                new_pos_y = pacman_pos[1] + j
+                if not (isValid(new_pos_x, cols) and isValid(new_pos_y, rows)):
+                    continue
+                if self.hasFood(new_pos_x, new_pos_x):
+                    result.append((new_pos_x, new_pos_y))
+
+        return result
+
     def getWalls(self):
         """
         Returns a Grid of boolean wall indicator variables.
@@ -587,7 +613,7 @@ def readCommand(argv):
         type="int",
         dest="numGhosts",
         help=default("The maximum number of ghosts to use"),
-        default=4,
+        default=2,
     )
     parser.add_option(
         "-z",
@@ -635,6 +661,15 @@ def readCommand(argv):
         ),
         default=30,
     )
+    parser.add_option(
+        "-r",
+        "--generate",
+        dest="generate",
+        help=default(
+            "Generate map by level=k,n=N(rows),m=M(cols)"
+        ),
+        default="",
+    )
 
     options, otherjunk = parser.parse_args(argv)
     if len(otherjunk) != 0:
@@ -645,7 +680,13 @@ def readCommand(argv):
         random.seed("cs188")
 
     # Choose a layout
-    args["layout"] = layout.getLayout(options.layout)
+    if options.generate != "":
+        generateInfo = {o[0].lower(): int(o[1]) for o in [
+            s.split('=') for s in options.generate.split(",")]}
+        args["layout"] = layout.generateMap(
+            generateInfo['n'], generateInfo['m'], level=generateInfo['level'])
+    else:
+        args["layout"] = layout.getLayout(options.layout)
     if args["layout"] == None:
         raise Exception("The layout " + options.layout + " cannot be found")
 
@@ -724,12 +765,8 @@ def runGames(
 
     scores = [game.state.getScore() for game in games]
     wins = [game.state.isWin() for game in games]
-    winRate = wins.count(True) / float(len(wins))
-    print(("Average Score:", sum(scores) / float(len(scores))))
     print(("Scores:       ", ", ".join([str(score) for score in scores])))
-    print(("Win Rate:      %d/%d (%.2f)" %
-           (wins.count(True), len(wins), winRate)))
-    print(("Record:       ", ", ".join(
+    print(("RESULT:       ", ", ".join(
         [["Loss", "Win"][int(w)] for w in wins])))
 
     return games

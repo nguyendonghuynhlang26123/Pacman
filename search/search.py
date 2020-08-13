@@ -142,6 +142,7 @@ def uniformCostSearch(problem):
                 frontier.update(
                     (successor[0], newMove), problem.getCostOfActions(newMove)
                 )
+    print(explored)
     return None
 
 
