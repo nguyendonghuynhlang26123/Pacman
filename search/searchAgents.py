@@ -42,17 +42,6 @@ import time
 import search
 
 
-class GoWestAgent(Agent):
-    "An agent that goes West until it can't."
-
-    def getAction(self, state):
-        "The agent receives a GameState (defined in pacman.py)."
-        if Directions.WEST in state.getLegalPacmanActions():
-            return Directions.WEST
-        else:
-            return Directions.STOP
-
-
 #######################################################
 # This portion is written for you, but will only work #
 #       after you fill in parts of search.py          #
@@ -86,7 +75,8 @@ class SearchAgent(Agent):
 
         # Get the search function from the name and heuristic
         if fn not in dir(search):
-            raise AttributeError(fn + " is not a search function in search.py.")
+            raise AttributeError(
+                fn + " is not a search function in search.py.")
         func = getattr(search, fn)
         if "heuristic" not in func.__code__.co_varnames:
             print("[SearchAgent] using function " + fn)
@@ -100,7 +90,8 @@ class SearchAgent(Agent):
                 raise AttributeError(
                     heuristic + " is not a function in searchAgents.py or search.py."
                 )
-            print("[SearchAgent] using function %s and heuristic %s" % (fn, heuristic))
+            print("[SearchAgent] using function %s and heuristic %s" %
+                  (fn, heuristic))
             # Note: this bit of Python trickery combines the search algorithm and the heuristic
             self.searchFunction = lambda x: func(x, heuristic=heur)
 
@@ -189,10 +180,10 @@ class PositionSearchProblem(search.SearchProblem):
         self.costFn = costFn
         self.visualize = visualize
 
-        if gameState.getNumFood() != 1:
-            raise ("Just 1 food is allowed")
+        # if gameState.getNumFood() != 1:
+        #     raise ("Just 1 food is allowed")
 
-        self.goal = gameState.getFood().asList()[0]
+        self.goal = gameState.getClosestFood()
         # For display purposes
         self._visited, self._visitedlist, self._expanded = {}, [], 0  # DO NOT CHANGE
 
@@ -477,7 +468,8 @@ class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
 
     def __init__(self):
-        self.searchFunction = lambda prob: search.aStarSearch(prob, cornersHeuristic)
+        self.searchFunction = lambda prob: search.aStarSearch(
+            prob, cornersHeuristic)
         self.searchType = CornersProblem
 
 
@@ -545,7 +537,8 @@ class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
 
     def __init__(self):
-        self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
+        self.searchFunction = lambda prob: search.aStarSearch(
+            prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
 
@@ -583,7 +576,8 @@ def foodHeuristic(state, problem):
     if not foods:
         return 0
     return max(
-        [mazeDistance(position, food, problem.startingGameState) for food in foods]
+        [mazeDistance(position, food, problem.startingGameState)
+         for food in foods]
     )
 
 
@@ -618,7 +612,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        return search.bfs(problem)
+        return search.astar(problem)
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -659,15 +653,10 @@ class AnyFoodSearchProblem(PositionSearchProblem):
 
 
 def mazeDistance(point1, point2, gameState):
-    """
-    Returns the maze distance between any two points, using the search functions
-    you have already built. The gameState can be any game state -- Pacman's
-    position in that state is ignored.
+    return len(shortestPathFrom(point1, point2, gameState))
 
-    Example usage: mazeDistance( (2,4), (5,6), gameState)
 
-    This might be a useful helper function for your ApproximateSearchAgent.
-    """
+def shortestPathFrom(point1, point2, gameState):
     x1, y1 = point1
     x2, y2 = point2
     walls = gameState.getWalls()
@@ -676,7 +665,7 @@ def mazeDistance(point1, point2, gameState):
     prob = PositionSearchProblem(
         gameState, start=point1, goal=point2, warn=False, visualize=False
     )
-    return len(search.bfs(prob))
+    return search.astar(prob, mHeur)
 
 
 # Abbreviations

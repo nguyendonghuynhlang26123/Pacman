@@ -58,18 +58,14 @@ class DirectionalGhost(GhostAgent):
     def __init__(self, index, prob_attack=0.8, prob_scaredFlee=0.8):
         self.index = index
         self.prob_attack = prob_attack
-        self.prob_scaredFlee = prob_scaredFlee
 
     def getDistribution(self, state):
         # Read variables from state
-        ghostState = state.getGhostState(self.index)
+        #ghostState = state.getGhostState(self.index)
         legalActions = removeStopAct(state.getLegalActions(self.index))
         pos = state.getGhostPosition(self.index)
-        isScared = ghostState.scaredTimer > 0
 
         speed = 1
-        if isScared:
-            speed = 0.5
 
         actionVectors = [Actions.directionToVector(
             a, speed) for a in legalActions]
@@ -79,13 +75,9 @@ class DirectionalGhost(GhostAgent):
         # Select best actions given the state
         distancesToPacman = [manhattanDistance(
             pos, pacmanPosition) for pos in newPositions]
-        if isScared:
-            bestScore = max(distancesToPacman)
-            bestProb = self.prob_scaredFlee
-        else:
-            bestScore = min(
-                distancesToPacman) if distancesToPacman != [] else 0
-            bestProb = self.prob_attack
+
+        bestScore = min(distancesToPacman) if distancesToPacman != [] else 0
+        bestProb = self.prob_attack
         bestActions = [action for action, distance in zip(
             legalActions, distancesToPacman) if distance == bestScore]
 
@@ -105,4 +97,16 @@ class LazyGhost(GhostAgent):
     def getDistribution(self, state):
         dist = util.Counter()
         dist['Stop'] = 1.0
+        return dist
+
+
+class StupidGhost(GhostAgent):
+    "A ghost that Move stupidly"
+
+    def getDistribution(self, state):
+        dist = util.Counter()
+        for a in removeStopAct(state.getLegalActions(self.index)):
+            dist[a] = 1.0
+        dist.normalize()
+        #print(state.getLegalActions(self.index), dist)
         return dist

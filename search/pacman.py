@@ -173,6 +173,16 @@ class GameState:
     def getGhostPositions(self):
         return [s.getPosition() for s in self.getGhostStates()]
 
+    def getGhostSurroundingPacman(self, radius=3):
+        ghosts = self.getGhostPositions()
+        return [g for g in ghosts if manhattanDistance(self.getPacmanPosition(), g) <= radius]
+
+    def getClosestGhost(self):
+        ghosts = self.getGhostPositions()
+        dists = [manhattanDistance(self.getPacmanPosition(), g)
+                 for g in ghosts]
+        return ghosts[dists.index(min(dists))] if dists != [] else None
+
     def getNumAgents(self):
         return len(self.data.agentStates)
 
@@ -200,31 +210,15 @@ class GameState:
         """
         return self.data.food
 
-    def getFoodSurroundingPacman(self, radius=2):
-        """
-            # # # # # <-- Food is in this square
-            # # # # #
-            # # P # # 
-            # # # F # 
-            # # # # F 
-        """
-        rows = self.data.food.height
-        cols = self.data.food.width
+    def getFoodSurroundingPacman(self, radius=3):
+        foods = self.data.food.asList()
+        return [f for f in foods if manhattanDistance(self.getPacmanPosition(), f) <= radius]
 
-        pacman_pos = self.getPacmanPosition()
-        result = []
-
-        def isValid(a, limit): return a >= 0 and a < limit
-        for i in range(-radius, radius + 1):
-            for j in range(-radius, radius + 1):
-                new_pos_x = pacman_pos[0] + i
-                new_pos_y = pacman_pos[1] + j
-                if not (isValid(new_pos_x, cols) and isValid(new_pos_y, rows)):
-                    continue
-                if self.hasFood(new_pos_x, new_pos_x):
-                    result.append((new_pos_x, new_pos_y))
-
-        return result
+    def getClosestFood(self):
+        foods = self.data.food.asList()
+        dists = [manhattanDistance(self.getPacmanPosition(), f)
+                 for f in foods]
+        return foods[dists.index(min(dists))] if dists != [] else None
 
     def getWalls(self):
         """
@@ -396,7 +390,8 @@ class PacmanRules:
 
         # Update Configuration
         vector = Actions.directionToVector(action, PacmanRules.PACMAN_SPEED)
-        pacmanState.configuration = pacmanState.configuration.generateSuccessor(vector)
+        pacmanState.configuration = pacmanState.configuration.generateSuccessor(
+            vector)
 
         # Eat
         next = pacmanState.configuration.getPosition()
@@ -446,7 +441,8 @@ class GhostRules:
         reach a dead end, but can turn 90 degrees at intersections.
         """
         conf = state.getGhostState(ghostIndex).configuration
-        possibleActions = Actions.getPossibleActions(conf, state.data.layout.walls)
+        possibleActions = Actions.getPossibleActions(
+            conf, state.data.layout.walls)
         reverse = Actions.reverseDirection(conf.direction)
         # if Directions.STOP in possibleActions:
         #    possibleActions.remove(Directions.STOP)
@@ -469,14 +465,16 @@ class GhostRules:
         if ghostState.scaredTimer > 0:
             speed /= 2.0
         vector = Actions.directionToVector(action, speed)
-        ghostState.configuration = ghostState.configuration.generateSuccessor(vector)
+        ghostState.configuration = ghostState.configuration.generateSuccessor(
+            vector)
 
     applyAction = staticmethod(applyAction)
 
     def decrementTimer(ghostState):
         timer = ghostState.scaredTimer
         if timer == 1:
-            ghostState.configuration.pos = nearestPoint(ghostState.configuration.pos)
+            ghostState.configuration.pos = nearestPoint(
+                ghostState.configuration.pos)
         ghostState.scaredTimer = max(0, timer - 1)
 
     decrementTimer = staticmethod(decrementTimer)
@@ -710,19 +708,23 @@ def loadAgent(pacman, nographics):
     for moduleDir in pythonPathDirs:
         if not os.path.isdir(moduleDir):
             continue
-        moduleNames = [f for f in os.listdir(moduleDir) if f.endswith("gents.py")]
+        moduleNames = [f for f in os.listdir(
+            moduleDir) if f.endswith("gents.py")]
         for modulename in moduleNames:
             try:
                 module = __import__(modulename[:-3])
             except ImportError:
+                print(modulename, "ERROR")
                 continue
             if pacman in dir(module):
                 if nographics and modulename == "keyboardAgents.py":
                     raise Exception(
                         "Using the keyboard requires graphics (not text display)"
                     )
+                print('fi----')
                 return getattr(module, pacman)
-    raise Exception("The agent " + pacman + " is not specified in any *Agents.py.")
+    raise Exception("The agent " + pacman +
+                    " is not specified in any *Agents.py.")
 
 
 def runGames(
@@ -737,23 +739,16 @@ def runGames(
 
     for _ in range(numGames):
         gameDisplay = display
-        game = rules.newGame(layout, pacman, ghosts, gameDisplay, catchExceptions)
+        game = rules.newGame(layout, pacman, ghosts,
+                             gameDisplay, catchExceptions)
         game.run()
         games.append(game)
 
     scores = [game.state.getScore() for game in games]
     wins = [game.state.isWin() for game in games]
-<<<<<<< HEAD
     print(("Scores:       ", ", ".join([str(score) for score in scores])))
     print(("RESULT:       ", ", ".join(
         [["Loss", "Win"][int(w)] for w in wins])))
-=======
-    winRate = wins.count(True) / float(len(wins))
-    print("Average Score:", sum(scores) / float(len(scores)))
-    print("Scores:       ", ", ".join([str(score) for score in scores]))
-    print("Win Rate:      %d/%d (%.2f)" % (wins.count(True), len(wins), winRate))
-    print("Record:       ", ", ".join([["Loss", "Win"][int(w)] for w in wins]))
->>>>>>> b52b29d1dcdb1efcbdde2579cdc967f773e2aeaa
 
     return games
 
