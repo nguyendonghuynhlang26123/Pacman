@@ -13,10 +13,10 @@
 
 
 from util import manhattanDistance
+from functools import reduce
 from game import Grid
 import os
 import random
-from functools import reduce
 
 VISIBILITY_MATRIX_CACHE = {}
 
@@ -130,11 +130,10 @@ class Layout:
 
         The shape of the maze.  Each character
         represents a different type of object.
-         % - Wall
-         . - Food
-         o - Capsule
-         G - Ghost
-         P - Pacman
+         1 - Wall
+         2 - Food
+         3 - Ghost
+         4 - Pacman
         Other characters are ignored.
         """
         maxY = self.height - 1
@@ -146,23 +145,20 @@ class Layout:
         self.agentPositions = [(i == 0, pos) for i, pos in self.agentPositions]
 
     def processLayoutChar(self, x, y, layoutChar):
-        if layoutChar == "%":
+        if layoutChar == '1':  # WALLS
             self.walls[x][y] = True
-        elif layoutChar == ".":
+        elif layoutChar == '2':  # FOODS
             self.food[x][y] = True
-        elif layoutChar == "o":
-            self.capsules.append((x, y))
-        elif layoutChar == "P":
+        elif layoutChar == '4':  # Pacman
             self.agentPositions.append((0, (x, y)))
-        elif layoutChar in ["G"]:
+        elif layoutChar == '3':  # Ghosts
             self.agentPositions.append((1, (x, y)))
-            self.numGhosts += 1
-        elif layoutChar in ["1", "2", "3", "4"]:
-            self.agentPositions.append((int(layoutChar), (x, y)))
             self.numGhosts += 1
 
 
 def getLayout(name, back=2):
+    if not os.path.exists("layout.py"):
+        os.chdir('search/')
     if name.endswith(".lay"):
         layout = tryToLoad("layouts/" + name)
         if layout == None:
@@ -179,11 +175,32 @@ def getLayout(name, back=2):
     return layout
 
 
+def generateMap(n, m, level=1, rate=0.7, numGhosts=0, numFoods=1):
+    from GM import generate_map
+    if level == 1:
+        numGhosts = 0
+        numFoods = 1
+    elif level == 2:
+        numFoods = 1
+    elif (level == 3 or level == 4) and numGhosts == 0:
+        numGhosts = 2
+        numFoods = 20
+    elif level > 4 or level <= 0:
+        raise ("Invalid generate level")
+    return Layout(generate_map(n, m, rate, numGhosts=numGhosts, numFoods=numFoods))
+
+
 def tryToLoad(fullname):
     if not os.path.exists(fullname):
-        return None
+        return tryToLoad
     f = open(fullname)
-    try:
-        return Layout([line.strip() for line in f])
+    try:  # LOAD INPUT BASING ON GIVEN FORMAT
+        lines = [line.strip() for line in f]
+        grid = [list(l) for l in lines[1:-1]]
+        pac_pos = lines[-1].split(' ')
+        grid[int(pac_pos[0])][int(pac_pos[1])] = '4'
+        grid = [''.join(g) for g in grid]
+        return Layout(grid)
+        # return Layout([line.strip() for line in f])
     finally:
         f.close()

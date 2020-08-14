@@ -22,6 +22,7 @@
 
 import util
 import time
+import os
 import traceback
 import sys
 
@@ -178,7 +179,8 @@ class Grid:
 
         self.width = width
         self.height = height
-        self.data = [[initialValue for y in range(height)] for x in range(width)]
+        self.data = [[initialValue for y in range(
+            height)] for x in range(width)]
         if bitRepresentation:
             self._unpackBits(bitRepresentation)
 
@@ -397,10 +399,6 @@ class Actions:
 
 
 class GameStateData:
-    """
-
-    """
-
     def __init__(self, prevState=None):
         """
         Generates a new data packet by copying information from its predecessor.
@@ -489,7 +487,8 @@ class GameStateData:
                 continue
             if agentState.configuration == None:
                 continue
-            x, y = [int(i) for i in util.nearestPoint(agentState.configuration.pos)]
+            x, y = [int(i) for i in util.nearestPoint(
+                agentState.configuration.pos)]
             agent_dir = agentState.configuration.direction
             if agentState.isPacman:
                 map[x][y] = self._pacStr(agent_dir)
@@ -580,9 +579,9 @@ class Game:
         self.totalAgentTimeWarnings = [0 for agent in agents]
         self.agentTimeout = False
         try:
-            from StringIO import StringIO  ## for Python 2
+            from StringIO import StringIO  # for Python 2
         except ImportError:
-            from io import StringIO  ## for Python 3
+            from io import StringIO  # for Python 3
         self.agentOutput = [StringIO() for agent in agents]
 
     def getProgress(self):
@@ -628,7 +627,7 @@ class Game:
         self.display.initialize(self.state.data)
         self.numMoves = 0
 
-        ###self.display.initialize(self.state.makeObservation(1).data)
+        # self.display.initialize(self.state.makeObservation(1).data)
         # inform learning agents of the game start
         for i in range(len(self.agents)):
             agent = self.agents[i]
@@ -665,7 +664,7 @@ class Game:
                         return
                 else:
                     agent.registerInitialState(self.state.deepCopy())
-                ## TODO: could this exceed the total time
+                # TODO: could this exceed the total time
                 self.unmute()
 
         agentIndex = self.startingIndex
@@ -697,7 +696,8 @@ class Game:
                         self.unmute()
                         return
                 else:
-                    observation = agent.observationFunction(self.state.deepCopy())
+                    observation = agent.observationFunction(
+                        self.state.deepCopy())
                 self.unmute()
             else:
                 observation = self.state.deepCopy()
@@ -709,7 +709,8 @@ class Game:
                 try:
                     timed_func = util.TimeoutFunction(
                         agent.getAction,
-                        int(self.rules.getMoveTimeout(agentIndex)) - int(move_time),
+                        int(self.rules.getMoveTimeout(
+                            agentIndex)) - int(move_time),
                     )
                     try:
                         start_time = time.time()
@@ -769,7 +770,8 @@ class Game:
             self.moveHistory.append((agentIndex, action))
             if self.catchExceptions:
                 try:
-                    self.state = self.state.generateSuccessor(agentIndex, action)
+                    self.state = self.state.generateSuccessor(
+                        agentIndex, action)
                 except Exception:
                     self.mute(agentIndex)
                     self._agentCrash(agentIndex)

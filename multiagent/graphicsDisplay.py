@@ -11,27 +11,11 @@
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
-import graphicsUtils
+
+import os
+from graphicsUtils import *
 import math
 import time
-from graphicsUtils import (
-    formatColor,
-    colorToVector,
-    changeText,
-    square,
-    refresh,
-    remove_from_screen,
-    begin_graphics,
-    circle,
-    moveCircle,
-    wait_for_keys,
-    sleep,
-    polygon,
-    move_by,
-    edit,
-    end_graphics,
-    line,changeColor,writePostscript
-)
 from game import Directions
 
 ###########################
@@ -95,7 +79,7 @@ CAPSULE_COLOR = formatColor(1, 1, 1)
 CAPSULE_SIZE = 0.25
 
 # Drawing walls
-WALL_RADIUS = 0.15
+WALL_RADIUS = 0.32
 
 
 class InfoPane:
@@ -122,7 +106,7 @@ class InfoPane:
         return x, y
 
     def drawPane(self):
-        self.scoreText = graphicsUtils.text(
+        self.scoreText = text(
             self.toScreen(0, 0),
             self.textColor,
             "SCORE:    0",
@@ -141,7 +125,7 @@ class InfoPane:
             size = 10
 
         for i, d in enumerate(distances):
-            t = graphicsUtils.text(
+            t = text(
                 self.toScreen(self.width / 2 + self.width / 8 * i, 0),
                 GHOST_COLORS[i + 1],
                 d,
@@ -158,8 +142,9 @@ class InfoPane:
         text = "RED TEAM"
         if isBlue:
             text = "BLUE TEAM"
-        self.teamText = graphicsUtils.text(
-            self.toScreen(300, 0), self.textColor, text, "Times", self.fontSize, "bold"
+        self.teamText = text(
+            self.toScreen(
+                300, 0), self.textColor, text, "Times", self.fontSize, "bold"
         )
 
     def updateGhostDistances(self, distances):
@@ -302,7 +287,8 @@ class PacmanGraphics:
         screen_width = 2 * self.gridSize + grid_width
         screen_height = 2 * self.gridSize + grid_height + INFO_PANE_HEIGHT
 
-        begin_graphics(screen_width, screen_height, BACKGROUND_COLOR, "CS188 Pacman")
+        begin_graphics(screen_width, screen_height,
+                       BACKGROUND_COLOR, "CS188 Pacman")
 
     def drawPacman(self, pacman, index):
         position = self.getPosition(pacman)
@@ -372,7 +358,8 @@ class PacmanGraphics:
                 refresh()
                 sleep(abs(self.frameTime) / frames)
         else:
-            self.movePacman(self.getPosition(pacman), self.getDirection(pacman), image)
+            self.movePacman(self.getPosition(pacman),
+                            self.getDirection(pacman), image)
         refresh()
 
     def getGhostColor(self, ghost, ghostIndex):
@@ -514,7 +501,8 @@ class PacmanGraphics:
             color = GHOST_COLORS[ghostIndex]
         edit(ghostImageParts[0], ("fill", color), ("outline", color))
         self.moveEyes(
-            self.getPosition(ghost), self.getDirection(ghost), ghostImageParts[-4:]
+            self.getPosition(ghost), self.getDirection(
+                ghost), ghostImageParts[-4:]
         )
         refresh()
 
@@ -650,7 +638,8 @@ class PacmanGraphics:
                             ),
                             add(
                                 screen,
-                                (self.gridSize * WALL_RADIUS, self.gridSize * (-0.5)),
+                                (self.gridSize * WALL_RADIUS,
+                                 self.gridSize * (-0.5)),
                             ),
                             wallColor,
                         )
@@ -823,7 +812,8 @@ class PacmanGraphics:
                             ),
                             add(
                                 screen,
-                                (self.gridSize * WALL_RADIUS, self.gridSize * (0.5)),
+                                (self.gridSize * WALL_RADIUS,
+                                 self.gridSize * (0.5)),
                             ),
                             wallColor,
                         )
@@ -980,7 +970,8 @@ class PacmanGraphics:
         self.expandedCells = []
         for k, cell in enumerate(cells):
             screenPos = self.to_screen(cell)
-            cellColor = formatColor(*[(n - k) * c * 0.5 / n + 0.25 for c in baseColor])
+            cellColor = formatColor(
+                *[(n - k) * c * 0.5 / n + 0.25 for c in baseColor])
             block = square(
                 screenPos, 0.5 * self.gridSize, color=cellColor, filled=1, behind=2
             )
@@ -1084,7 +1075,6 @@ def add(x, y):
 SAVE_POSTSCRIPT = False
 POSTSCRIPT_OUTPUT_DIR = "frames"
 FRAME_NUMBER = 0
-import os
 
 
 def saveFrame():
@@ -1097,4 +1087,3 @@ def saveFrame():
     name = os.path.join(POSTSCRIPT_OUTPUT_DIR, "frame_%08d.ps" % FRAME_NUMBER)
     FRAME_NUMBER += 1
     writePostscript(name)  # writes the current canvas
-

@@ -20,6 +20,10 @@ from util import manhattanDistance
 import util
 
 
+def removeStopAct(List):
+    return [_ for _ in List if _ != 'Stop']
+
+
 class GhostAgent(Agent):
     def __init__(self, index):
         self.index = index
@@ -41,14 +45,15 @@ class RandomGhost(GhostAgent):
 
     def getDistribution(self, state):
         dist = util.Counter()
-        for a in state.getLegalActions(self.index):
+        for a in removeStopAct(state.getLegalActions(self.index)):
             dist[a] = 1.0
         dist.normalize()
+        #print(state.getLegalActions(self.index), dist)
         return dist
 
 
 class DirectionalGhost(GhostAgent):
-    "A ghost that prefers to rush Pacman, or flee when scared."
+    "A ghost that prefers to rush Pacman"
 
     def __init__(self, index, prob_attack=0.8, prob_scaredFlee=0.8):
         self.index = index
@@ -58,7 +63,7 @@ class DirectionalGhost(GhostAgent):
     def getDistribution(self, state):
         # Read variables from state
         ghostState = state.getGhostState(self.index)
-        legalActions = state.getLegalActions(self.index)
+        legalActions = removeStopAct(state.getLegalActions(self.index))
         pos = state.getGhostPosition(self.index)
         isScared = ghostState.scaredTimer > 0
 
@@ -66,43 +71,38 @@ class DirectionalGhost(GhostAgent):
         if isScared:
             speed = 0.5
 
-        actionVectors = [Actions.directionToVector(a, speed) for a in legalActions]
-        newPositions = [(pos[0] + a[0], pos[1] + a[1]) for a in actionVectors]
+        actionVectors = [Actions.directionToVector(
+            a, speed) for a in legalActions]
+        newPositions = [(pos[0]+a[0], pos[1]+a[1]) for a in actionVectors]
         pacmanPosition = state.getPacmanPosition()
 
         # Select best actions given the state
-        distancesToPacman = [
-            manhattanDistance(pos, pacmanPosition) for pos in newPositions
-        ]
+        distancesToPacman = [manhattanDistance(
+            pos, pacmanPosition) for pos in newPositions]
         if isScared:
             bestScore = max(distancesToPacman)
             bestProb = self.prob_scaredFlee
         else:
-            bestScore = min(distancesToPacman)
+            bestScore = min(
+                distancesToPacman) if distancesToPacman != [] else 0
             bestProb = self.prob_attack
-        bestActions = [
-            action
-            for action, distance in zip(legalActions, distancesToPacman)
-            if distance == bestScore
-        ]
+        bestActions = [action for action, distance in zip(
+            legalActions, distancesToPacman) if distance == bestScore]
 
         # Construct distribution
         dist = util.Counter()
         for a in bestActions:
             dist[a] = bestProb / len(bestActions)
         for a in legalActions:
-            dist[a] += (1 - bestProb) / len(legalActions)
+            dist[a] += (1-bestProb) / len(legalActions)
         dist.normalize()
         return dist
 
 
-class FixedGhost(GhostAgent):
-    "A ghost that do nothing"
+class LazyGhost(GhostAgent):
+    "A ghost that chooses a legal action uniformly at random."
 
     def getDistribution(self, state):
         dist = util.Counter()
-        print(dist)
-        for a in state.getLegalActions(self.index):
-            dist[a] = 1.0
-        dist.normalize()
+        dist['Stop'] = 1.0
         return dist
