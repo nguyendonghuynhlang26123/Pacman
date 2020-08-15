@@ -183,7 +183,8 @@ class GameState:
 
     def getClosestGhost(self):
         ghosts = self.getGhostPositions()
-        dists = [manhattanDistance(self.getPacmanPosition(), g) for g in ghosts]
+        dists = [manhattanDistance(self.getPacmanPosition(), g)
+                 for g in ghosts]
         return ghosts[dists.index(min(dists))] if dists != [] else None
 
     def getNearbyFood(self, d=3):
@@ -425,7 +426,8 @@ class PacmanRules:
 
         # Update Configuration
         vector = Actions.directionToVector(action, PacmanRules.PACMAN_SPEED)
-        pacmanState.configuration = pacmanState.configuration.generateSuccessor(vector)
+        pacmanState.configuration = pacmanState.configuration.generateSuccessor(
+            vector)
 
         # Eat
         next = pacmanState.configuration.getPosition()
@@ -475,7 +477,8 @@ class GhostRules:
         reach a dead end, but can turn 90 degrees at intersections.
         """
         conf = state.getGhostState(ghostIndex).configuration
-        possibleActions = Actions.getPossibleActions(conf, state.data.layout.walls)
+        possibleActions = Actions.getPossibleActions(
+            conf, state.data.layout.walls)
         reverse = Actions.reverseDirection(conf.direction)
         # if Directions.STOP in possibleActions:
         #    possibleActions.remove(Directions.STOP)
@@ -498,14 +501,16 @@ class GhostRules:
         if ghostState.scaredTimer > 0:
             speed /= 2.0
         vector = Actions.directionToVector(action, speed)
-        ghostState.configuration = ghostState.configuration.generateSuccessor(vector)
+        ghostState.configuration = ghostState.configuration.generateSuccessor(
+            vector)
 
     applyAction = staticmethod(applyAction)
 
     def decrementTimer(ghostState):
         timer = ghostState.scaredTimer
         if timer == 1:
-            ghostState.configuration.pos = nearestPoint(ghostState.configuration.pos)
+            ghostState.configuration.pos = nearestPoint(
+                ghostState.configuration.pos)
         ghostState.scaredTimer = max(0, timer - 1)
 
     decrementTimer = staticmethod(decrementTimer)
@@ -535,7 +540,7 @@ class GhostRules:
             state.data._eaten[agentIndex] = True
         else:
             if not state.data._win:
-                # state.data.scoreChange -= 500
+                state.data.scoreChange -= 500
                 state.data._lose = True
 
     collide = staticmethod(collide)
@@ -758,7 +763,8 @@ def loadAgent(pacman, nographics):
     for moduleDir in pythonPathDirs:
         if not os.path.isdir(moduleDir):
             continue
-        moduleNames = [f for f in os.listdir(moduleDir) if f.endswith("gents.py")]
+        moduleNames = [f for f in os.listdir(
+            moduleDir) if f.endswith("gents.py")]
         for modulename in moduleNames:
             try:
                 module = __import__(modulename[:-3])
@@ -772,7 +778,8 @@ def loadAgent(pacman, nographics):
                     )
                 print("-----")
                 return getattr(module, pacman)
-    raise Exception("The agent " + pacman + " is not specified in any *Agents.py.")
+    raise Exception("The agent " + pacman +
+                    " is not specified in any *Agents.py.")
 
 
 def runGames(
@@ -787,7 +794,8 @@ def runGames(
 
     for _ in range(numGames):
         gameDisplay = display
-        game = rules.newGame(layout, pacman, ghosts, gameDisplay, catchExceptions)
+        game = rules.newGame(layout, pacman, ghosts,
+                             gameDisplay, catchExceptions)
         game.run()
         games.append(game)
 

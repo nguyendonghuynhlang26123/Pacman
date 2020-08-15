@@ -400,7 +400,7 @@ def betterEvaluationFunction(currentGameState):
     return score + foodscore + ghostscore
 
 
-def customEvaluationFunction(currentGameState):
+def customEvaluationFunction(curGameState):
     pos = curGameState.getPacmanPosition()
     closestFoodDist = -1
     foodList = curGameState.getNearbyFood()
