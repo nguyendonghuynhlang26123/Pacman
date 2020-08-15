@@ -186,36 +186,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         agent_num = gameState.getNumAgents()
         ActEvalScoreList = []
 
-        def alphabeta(node, itercnt, a, b):
-            """Ending condition"""
-            if itercnt >= self.depth * agent_num or node.isWin() or node.isLose():
-                """return eval score get from result"""
-                return self.evaluationFunction(node)
-            if itercnt % agent_num != 0:  # ghost turn (Min node)
-                res = 1e10
-                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
-                    successor = node.generateSuccessor(
-                        itercnt % agent_num, act)
-                    res = min(res, alphabeta(successor, itercnt + 1, a, b))
-                    b = min(b, res)
-                    if b < a:
-                        break   # Prune this branch
-                return res
-            else:  # Pacman turn (Max node)
-                res = -1e10
-                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
-                    successor = node.generateSuccessor(
-                        itercnt % agent_num, act)
-                    res = max(res, alphabeta(successor, itercnt + 1, a, b))
-                    a = max(a, res)
-                    if itercnt == 0:
-                        # add peak node to eval score list
-                        ActEvalScoreList.append(res)
-                    if b < a:
-                        break   # Prune this branch
-                return res
-
-        res = alphabeta(gameState, 0, -1e12, 1e12)
         # Get act with max eval score from act eval list to return
         return removeStopAct(gameState.getLegalActions(0))[ActEvalScoreList.index(max(ActEvalScoreList))]
 
@@ -286,12 +256,11 @@ class ExplorerAgent(ExpectimaxAgent):
         perceived_ghosts = gameState.getGhostSurroundingPacman(radius=3)
         perceived_foods = gameState.getFoodSurroundingPacman(radius=3)
         legalActions = self.exploreActions(gameState.getPacmanPosition(),
-                                           removeStopAct(gameState.getLegalActions(0)))
+                                           (gameState.getLegalActions(0)))
         closest_Food = gameState.getClosestFood()
         self.explored.add(gameState.getPacmanPosition())
 
         if (len(perceived_ghosts) == 0 and len(perceived_foods) == 0):
-            "MIRACLE: "
             if len(self.guide) > 0 or (gameState.getScore() < 0 and random.random() > self.miracle_rate):
                 print("MIRACLE")
                 next_step = self.miracleGuide(gameState)
@@ -406,83 +375,32 @@ def betterEvaluationFunction(currentGameState):
     return score + foodscore + ghostscore
 
 
-def customEvaluationFunction(currentGameState):
-    """
-      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-      evaluation function (question 5).
+# def customEvaluationFunction(currentGameState):
+#     """
+#       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+#       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
-    """
-    "*** YOUR CODE HERE ***"
-    def distanceToClosestGhost(gameState):
-        ghosts = gameState.getGhostPositions()
-        ghosts_dis = [manhattanDistance(
-            gameState.getPacmanPosition(), g) for g in ghosts]
-        if (min(ghosts_dis) == 0):
-            return -9999
-        return min(ghosts_dis)
+#       DESCRIPTION: <write something here so we know what you did>
+#     """
+#     "*** YOUR CODE HERE ***"
+#     def distanceToClosestGhost(gameState):
+#         ghosts = gameState.getGhostPositions()
+#         ghosts_dis = [manhattanDistance(
+#             gameState.getPacmanPosition(), g) for g in ghosts]
+#         if (min(ghosts_dis) == 0):
+#             return -9999
+#         return min(ghosts_dis)
 
-    # https://www.dcalacci.net/2013/pacman-gradient-descent/
-    closestFood = manhattanDistance(
-        gameState.getPacmanPosition(), gameState.getClosestFood())
-    current_score = currentGameState.getScore()
-    distToClosestGhost = distanceToClosestGhost(currentGameState)
-    foodsLeft = currentGameState.getNumFood()
+#     # https://www.dcalacci.net/2013/pacman-gradient-descent/
+#     closestFood = manhattanDistance(
+#         currentGameState.getPacmanPosition(), currentGameState.getClosestFood())
+#     current_score = currentGameState.getScore()
+#     distToClosestGhost = distanceToClosestGhost(currentGameState)
+#     foodsLeft = currentGameState.getNumFood()
 
-    return current_score - 1.5 * closestFood - 2*(1.0/distToClosestGhost) - 4*foodsLeft
-
-
-def testEvaluationFunction(currentGameState):
-    def foodheuristic(gameState):
-        # Find closest food using manhattan distance
-        foods = gameState.getFoodSurroundingPacman(2)
-        food_dis = ([manhattanDistance(gameState.getPacmanPosition(), food)
-                     for food in foods])
-        return min(food_dis) if food_dis != [] else 0
-
-    def allfoodheuristic(gameState):
-        foods = gameState.getFood().asList()
-        food_dis = ([manhattanDistance(gameState.getPacmanPosition(), food)
-                     for food in foods])
-        return min(food_dis) if food_dis != [] else 0
-
-    # This is for when pacman is out of hope and he must end his life as soon as possible to reserve his point
-    # Testing...
-    def bestendingheuristic(gameState):
-        ghost_dis = 1e6
-        # Find closest ghost using manhattan distance
-        for ghost in gameState.getGhostStates():
-            ghost_dis = min(manhattanDistance(
-                gameState.getPacmanPosition(), ghost.getPosition()), ghost_dis)
-        score = -pow(ghost_dis, 2)
-        if gameState.isLose():
-            score = 1e6
-        return score
-
-    def distanceheuristic(gameState):
-        ghost_dis = []
-        # Find closest food using manhattan distance
-        for g in gameState.getGhostStates():
-            ghost_dis.append(
-                manhattanDistance(gameState.getPacmanPosition(), g.getPosition()))
-        if len(ghost_dis) > 0:
-            return (sum(ghost_dis) / len(ghost_dis))
-        else:
-            return 0
-
-    score = currentGameState.getScore()
-    foodscore = foodheuristic(currentGameState)
-    ghostscore = distanceheuristic(currentGameState)
-    if random.random() < 0.0001 and len(currentGameState.getFoodSurroundingPacman(3)) <= 3:
-        print('MIRACLE')
-        return score + 999 * allfoodheuristic(currentGameState)
-    if score < -200 and len(currentGameState.getFoodSurroundingPacman(3)) <= 1:
-        print('SUICIDE')
-        return bestendingheuristic(currentGameState)
-    return score + foodscore + ghostscore
+#     return current_score - 1.5 * closestFood - 2*(1.0/distToClosestGhost) - 4*foodsLeft
 
 
-# Abbreviation
-test = testEvaluationFunction
-custom = customEvaluationFunction
+# # Abbreviation
+# custom = customEvaluationFunction
 better = betterEvaluationFunction
