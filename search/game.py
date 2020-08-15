@@ -56,6 +56,7 @@ class Directions:
     EAST = "East"
     WEST = "West"
     STOP = "Stop"
+    STUCK = "Stuck"
 
     LEFT = {NORTH: WEST, SOUTH: EAST, EAST: NORTH, WEST: SOUTH, STOP: STOP}
 
@@ -179,8 +180,7 @@ class Grid:
 
         self.width = width
         self.height = height
-        self.data = [[initialValue for y in range(
-            height)] for x in range(width)]
+        self.data = [[initialValue for y in range(height)] for x in range(width)]
         if bitRepresentation:
             self._unpackBits(bitRepresentation)
 
@@ -487,8 +487,7 @@ class GameStateData:
                 continue
             if agentState.configuration == None:
                 continue
-            x, y = [int(i) for i in util.nearestPoint(
-                agentState.configuration.pos)]
+            x, y = [int(i) for i in util.nearestPoint(agentState.configuration.pos)]
             agent_dir = agentState.configuration.direction
             if agentState.isPacman:
                 map[x][y] = self._pacStr(agent_dir)
@@ -597,6 +596,9 @@ class Game:
         self.gameOver = True
         self.agentCrashed = True
         self.rules.agentCrash(self, agentIndex)
+        from util import pause_getch
+
+        pause_getch()
 
     OLD_STDOUT = None
     OLD_STDERR = None
@@ -696,8 +698,7 @@ class Game:
                         self.unmute()
                         return
                 else:
-                    observation = agent.observationFunction(
-                        self.state.deepCopy())
+                    observation = agent.observationFunction(self.state.deepCopy())
                 self.unmute()
             else:
                 observation = self.state.deepCopy()
@@ -709,8 +710,7 @@ class Game:
                 try:
                     timed_func = util.TimeoutFunction(
                         agent.getAction,
-                        int(self.rules.getMoveTimeout(
-                            agentIndex)) - int(move_time),
+                        int(self.rules.getMoveTimeout(agentIndex)) - int(move_time),
                     )
                     try:
                         start_time = time.time()
@@ -770,11 +770,10 @@ class Game:
             self.moveHistory.append((agentIndex, action))
             if self.catchExceptions:
                 try:
-                    self.state = self.state.generateSuccessor(
-                        agentIndex, action)
+                    self.state = self.state.generateSuccessor(agentIndex, action)
                 except Exception:
                     self.mute(agentIndex)
-                    self._agentCrash(agentIndex)
+                    self._agentCrash(agentIndex, quiet=True)
                     self.unmute()
                     return
             else:

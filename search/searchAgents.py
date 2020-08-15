@@ -75,8 +75,7 @@ class SearchAgent(Agent):
 
         # Get the search function from the name and heuristic
         if fn not in dir(search):
-            raise AttributeError(
-                fn + " is not a search function in search.py.")
+            raise AttributeError(fn + " is not a search function in search.py.")
         func = getattr(search, fn)
         if "heuristic" not in func.__code__.co_varnames:
             print("[SearchAgent] using function " + fn)
@@ -90,8 +89,7 @@ class SearchAgent(Agent):
                 raise AttributeError(
                     heuristic + " is not a function in searchAgents.py or search.py."
                 )
-            print("[SearchAgent] using function %s and heuristic %s" %
-                  (fn, heuristic))
+            print("[SearchAgent] using function %s and heuristic %s" % (fn, heuristic))
             # Note: this bit of Python trickery combines the search algorithm and the heuristic
             self.searchFunction = lambda x: func(x, heuristic=heur)
 
@@ -128,7 +126,7 @@ class SearchAgent(Agent):
     def getAction(self, state):
         """
         Returns the next action in the path chosen earlier (in
-        registerInitialState).  Return Directions.STOP if there is no further
+        registerInitialState). Return Directions.STOP if there is no further
         action to take.
 
         state: a GameState object (pacman.py)
@@ -137,13 +135,10 @@ class SearchAgent(Agent):
             self.actionIndex = 0
         i = self.actionIndex
         self.actionIndex += 1
-        if (self.actions == None):
-            print("Cannot find food!")
-            return Directions.STOP
-        if i < len(self.actions):
+        if self.actions and i < len(self.actions):
             return self.actions[i]
         else:
-            return Directions.STOP
+            return Directions.STUCK
 
 
 class PositionSearchProblem(search.SearchProblem):
@@ -298,17 +293,14 @@ class AvoidLazyGhostProblem(PositionSearchProblem):
 
 
 class SafeSearchAgent(SearchAgent):
-
-    def __init__(self,
-                 fn="uniformCostSearch",
-                 heuristic="manhattanHeuristic"):
+    def __init__(self, fn="uniformCostSearch", heuristic="manhattanHeuristic"):
         if fn not in dir(search):
-            raise AttributeError(
-                fn + " is not a search function in search.py.")
+            raise AttributeError(fn + " is not a search function in search.py.")
         func = getattr(search, fn)
         if func == search.bfs or func == search.dfs:
             raise AttributeError(
-                fn + " is not an appropriate search function for this solution")
+                fn + " is not an appropriate search function for this solution"
+            )
         if "heuristic" not in func.__code__.co_varnames:
             print("[SafeSearchAgent] using function " + fn)
             self.searchFunction = func
@@ -321,11 +313,14 @@ class SafeSearchAgent(SearchAgent):
                 raise AttributeError(
                     heuristic + " is not a function in searchAgents.py or search.py."
                 )
-            print("[SafeSearchAgent] using function %s and heuristic %s" %
-                  (fn, heuristic))
+            print(
+                "[SafeSearchAgent] using function %s and heuristic %s" % (fn, heuristic)
+            )
             self.searchFunction = lambda x: func(x, heuristic=heur)
 
-        def costFn(pos): return 1
+        def costFn(pos):
+            return 1
+
         self.searchType = lambda state: AvoidLazyGhostProblem(state, costFn)
 
 
@@ -346,6 +341,7 @@ def euclideanHeuristic(position, problem, info={}):
 #####################################################
 # This portion is incomplete.  Time to write code!  #
 #####################################################
+
 
 class FoodSearchProblem:
     """
@@ -411,8 +407,7 @@ class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
 
     def __init__(self):
-        self.searchFunction = lambda prob: search.aStarSearch(
-            prob, foodHeuristic)
+        self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
 
@@ -450,8 +445,7 @@ def foodHeuristic(state, problem):
     if not foods:
         return 0
     return max(
-        [mazeDistance(position, food, problem.startingGameState)
-         for food in foods]
+        [mazeDistance(position, food, problem.startingGameState) for food in foods]
     )
 
 

@@ -145,20 +145,20 @@ class Layout:
         self.agentPositions = [(i == 0, pos) for i, pos in self.agentPositions]
 
     def processLayoutChar(self, x, y, layoutChar):
-        if layoutChar == '1':  # WALLS
+        if layoutChar == "1":  # WALLS
             self.walls[x][y] = True
-        elif layoutChar == '2':  # FOODS
+        elif layoutChar == "2":  # FOODS
             self.food[x][y] = True
-        elif layoutChar == '4':  # Pacman
+        elif layoutChar == "4":  # Pacman
             self.agentPositions.append((0, (x, y)))
-        elif layoutChar == '3':  # Ghosts
+        elif layoutChar == "3":  # Ghosts
             self.agentPositions.append((1, (x, y)))
             self.numGhosts += 1
 
 
 def getLayout(name, back=2):
     if not os.path.exists("layout.py"):
-        os.chdir('search/')
+        os.chdir("search/")
     if name.endswith(".lay"):
         layout = tryToLoad("layouts/" + name)
         if layout == None:
@@ -177,15 +177,17 @@ def getLayout(name, back=2):
 
 def generateMap(n, m, level=1, rate=0.7, numGhosts=0, numFoods=1):
     from GM import generate_map
+
     if level == 1:
         numGhosts = 0
         numFoods = 1
     elif level == 2:
         numFoods = 1
+        numGhosts = random.randint(0, int(n * m / 50)) + 1
     elif (level == 3 or level == 4) and numGhosts == 0:
         numGhosts = 2
         numFoods = 20
-    elif level > 4 or level <= 0:
+    elif level > 4 or level < 1:
         raise ("Invalid generate level")
     return Layout(generate_map(n, m, rate, numGhosts=numGhosts, numFoods=numFoods))
 
@@ -197,9 +199,9 @@ def tryToLoad(fullname):
     try:  # LOAD INPUT BASING ON GIVEN FORMAT
         lines = [line.strip() for line in f]
         grid = [list(l) for l in lines[1:-1]]
-        pac_pos = lines[-1].split(' ')
-        grid[int(pac_pos[0])][int(pac_pos[1])] = '4'
-        grid = [''.join(g) for g in grid]
+        pac_pos = lines[-1].split(" ")
+        grid[int(pac_pos[0])][int(pac_pos[1])] = "4"
+        grid = ["".join(g) for g in grid]
         return Layout(grid)
         # return Layout([line.strip() for line in f])
     finally:
