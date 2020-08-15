@@ -88,7 +88,7 @@ class InfoPane:
         self.width = (layout.width) * gridSize
         self.base = (layout.height + 1) * gridSize
         self.height = INFO_PANE_HEIGHT
-        self.fontSize = 24
+        self.fontSize = 17
         self.textColor = PACMAN_COLOR
         self.drawPane()
 
@@ -143,8 +143,7 @@ class InfoPane:
         if isBlue:
             text = "BLUE TEAM"
         self.teamText = text(
-            self.toScreen(
-                300, 0), self.textColor, text, "Times", self.fontSize, "bold"
+            self.toScreen(300, 0), self.textColor, text, "Times", self.fontSize, "bold"
         )
 
     def updateGhostDistances(self, distances):
@@ -287,8 +286,7 @@ class PacmanGraphics:
         screen_width = 2 * self.gridSize + grid_width
         screen_height = 2 * self.gridSize + grid_height + INFO_PANE_HEIGHT
 
-        begin_graphics(screen_width, screen_height,
-                       BACKGROUND_COLOR, "CS188 Pacman")
+        begin_graphics(screen_width, screen_height, BACKGROUND_COLOR, "CS188 Pacman")
 
     def drawPacman(self, pacman, index):
         position = self.getPosition(pacman)
@@ -358,8 +356,7 @@ class PacmanGraphics:
                 refresh()
                 sleep(abs(self.frameTime) / frames)
         else:
-            self.movePacman(self.getPosition(pacman),
-                            self.getDirection(pacman), image)
+            self.movePacman(self.getPosition(pacman), self.getDirection(pacman), image)
         refresh()
 
     def getGhostColor(self, ghost, ghostIndex):
@@ -501,8 +498,7 @@ class PacmanGraphics:
             color = GHOST_COLORS[ghostIndex]
         edit(ghostImageParts[0], ("fill", color), ("outline", color))
         self.moveEyes(
-            self.getPosition(ghost), self.getDirection(
-                ghost), ghostImageParts[-4:]
+            self.getPosition(ghost), self.getDirection(ghost), ghostImageParts[-4:]
         )
         refresh()
 
@@ -638,8 +634,7 @@ class PacmanGraphics:
                             ),
                             add(
                                 screen,
-                                (self.gridSize * WALL_RADIUS,
-                                 self.gridSize * (-0.5)),
+                                (self.gridSize * WALL_RADIUS, self.gridSize * (-0.5)),
                             ),
                             wallColor,
                         )
@@ -812,8 +807,7 @@ class PacmanGraphics:
                             ),
                             add(
                                 screen,
-                                (self.gridSize * WALL_RADIUS,
-                                 self.gridSize * (0.5)),
+                                (self.gridSize * WALL_RADIUS, self.gridSize * (0.5)),
                             ),
                             wallColor,
                         )
@@ -970,8 +964,7 @@ class PacmanGraphics:
         self.expandedCells = []
         for k, cell in enumerate(cells):
             screenPos = self.to_screen(cell)
-            cellColor = formatColor(
-                *[(n - k) * c * 0.5 / n + 0.25 for c in baseColor])
+            cellColor = formatColor(*[(n - k) * c * 0.5 / n + 0.25 for c in baseColor])
             block = square(
                 screenPos, 0.5 * self.gridSize, color=cellColor, filled=1, behind=2
             )

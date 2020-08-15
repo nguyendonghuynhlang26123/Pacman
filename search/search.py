@@ -142,7 +142,6 @@ def uniformCostSearch(problem):
                 frontier.update(
                     (successor[0], newMove), problem.getCostOfActions(newMove)
                 )
-    print(explored)
     return None
 
 
@@ -173,8 +172,7 @@ def aStarSearch(problem, heuristic):
                 newMove = move + [successor[1]]
                 frontier.update(
                     (childState, newMove),
-                    problem.getCostOfActions(
-                        newMove) + heuristic(childState, problem),
+                    problem.getCostOfActions(newMove) + heuristic(childState, problem),
                 )
     return None
 

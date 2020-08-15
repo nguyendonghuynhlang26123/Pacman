@@ -158,9 +158,12 @@ def _destroy_window(event=None):
 
 def end_graphics():
     global _root_window, _canvas, _mouse_enabled
+    from util import pause_getch
+
+    pause_getch()
     try:
         try:
-            sleep(1)
+            sleep(0.1)
             if _root_window != None:
                 _root_window.destroy()
         except SystemExit as e:
