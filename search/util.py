@@ -26,9 +26,12 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
+import time
+import signal
 import sys
 import inspect
-import heapq, random
+import heapq
+import random
 from io import StringIO
 
 
@@ -739,6 +742,9 @@ class PriorityQueue:
     def isEmpty(self):
         return len(self.heap) == 0
 
+    def has(self, item):
+        return len([i for (p, c, i) in self.heap if item != i]) > 0
+
     def update(self, item, priority):
         # If item already in priority queue with higher priority, update its priority and rebuild the heap.
         # If item already in priority queue with equal or lower priority, do nothing.
@@ -753,6 +759,9 @@ class PriorityQueue:
                 break
         else:
             self.push(item, priority)
+
+    def __repr__(self):
+        return str(self.heap)
 
 
 class PriorityQueueWithFunction(PriorityQueue):
@@ -776,6 +785,11 @@ class PriorityQueueWithFunction(PriorityQueue):
 def manhattanDistance(xy1, xy2):
     "Returns the Manhattan distance between points xy1 and xy2"
     return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+
+
+def euclideanHeuristic(xy1, xy2):
+    "The Euclidean distance heuristic between xy1, xy2"
+    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
 
 
 """
@@ -868,7 +882,7 @@ class Counter(dict):
         ['second', 'third', 'first']
         """
         sortedItems = self.items()
-        compare = lambda x, y: sign(y[1] - x[1])
+        def compare(x, y): return sign(y[1] - x[1])
         sortedItems.sort(cmp=compare)
         return [x[0] for x in sortedItems]
 
@@ -1007,7 +1021,8 @@ def raiseNotDefined():
     line = inspect.stack()[1][2]
     method = inspect.stack()[1][3]
 
-    print("*** Method not implemented: %s at line %s of %s" % (method, line, fileName))
+    print("*** Method not implemented: %s at line %s of %s" %
+          (method, line, fileName))
     sys.exit(1)
 
 
@@ -1151,14 +1166,16 @@ def lookup(name, namespace):
     """
     dots = name.count(".")
     if dots > 0:
-        moduleName, objName = ".".join(name.split(".")[:-1]), name.split(".")[-1]
+        moduleName, objName = ".".join(
+            name.split(".")[:-1]), name.split(".")[-1]
         module = __import__(moduleName)
         return getattr(module, objName)
     else:
         modules = [
             obj for obj in namespace.values() if str(type(obj)) == "<type 'module'>"
         ]
-        options = [getattr(module, name) for module in modules if name in dir(module)]
+        options = [getattr(module, name)
+                   for module in modules if name in dir(module)]
         options += [obj[1] for obj in namespace.items() if obj[0] == name]
         if len(options) == 1:
             return options[0]
@@ -1183,8 +1200,6 @@ def pause():
 # of active time outs.  Currently, questions which have test cases calling
 # this have all student code so wrapped.
 #
-import signal
-import time
 
 
 class TimeoutFunctionException(Exception):
@@ -1252,4 +1267,3 @@ def unmutePrint():
 
     sys.stdout = _ORIGINAL_STDOUT
     # sys.stderr = _ORIGINAL_STDERR
-

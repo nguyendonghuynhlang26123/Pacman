@@ -16,7 +16,7 @@ from game import Agent
 from game import Actions
 from game import Directions
 import random
-from util import manhattanDistance
+from util import manhattanDistance, euclideanHeuristic
 import util
 
 
@@ -103,9 +103,34 @@ class LazyGhost(GhostAgent):
 class StupidGhost(GhostAgent):
     "A ghost that Move stupidly"
 
+    def __init__(self, index):
+        self.init_pos = ()
+        self.index = index
+        self.visited = set({})
+
     def getDistribution(self, state):
+        legalActions = removeStopAct(state.getLegalActions(self.index))
+        pos = state.getGhostPosition(self.index)
+        if self.init_pos == ():
+            self.init_pos = pos
+
+        self.visited.add(pos)
+        speed = 1
+        actionVectors = [Actions.directionToVector(
+            a, speed) for a in legalActions]
+        newPositions = [(pos[0]+a[0], pos[1]+a[1]) for a in actionVectors]
+
+        # Select best actions given the state
+        distancesToInitialPos = [manhattanDistance(
+            pos, self.init_pos) for pos in newPositions]
+
+        bestScore = min(
+            distancesToInitialPos) if distancesToInitialPos != [] else 0
+        bestActions = [action for action, distance in zip(
+            legalActions, distancesToInitialPos) if distance == bestScore]
+
         dist = util.Counter()
-        for a in removeStopAct(state.getLegalActions(self.index)):
+        for a in bestActions:
             dist[a] = 1.0
         dist.normalize()
         #print(state.getLegalActions(self.index), dist)
