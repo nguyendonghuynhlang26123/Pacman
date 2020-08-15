@@ -153,6 +153,27 @@ def nullHeuristic(state, problem=None):
     return 0
 
 
+def greedyBestFisrtSearch(problem, heuristic):
+    start = problem.getStartState()
+
+    explored = []
+    frontier = util.PriorityQueue()
+    frontier.push((start, []), heuristic(start, problem))
+    while not frontier.isEmpty():
+        state, move = frontier.pop()
+        if problem.isGoalState(state):
+            return move
+        explored.append(state)
+        for successor in problem.getSuccessors(state):
+            childState = successor[0]
+            if childState not in explored:
+                newMove = move + [successor[1]]
+                frontier.update(
+                    (childState, newMove), heuristic(childState, problem)
+                )
+    return None
+
+
 def aStarSearch(problem, heuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
@@ -182,3 +203,4 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
+gbfs = greedyBestFisrtSearch

@@ -208,7 +208,40 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         agent_num = gameState.getNumAgents()
         ActEvalScoreList = []
 
+        """remove stop action from movement list"""
+        def removeStopAct(List):
+            return [_ for _ in List if _ != 'Stop']
 
+        def AlphaBeta(node, itercnt, alpha, beta):
+            """Ending condition"""
+            if itercnt >= self.depth * agent_num or node.isWin() or node.isLose():
+                """return eval score get from result"""
+                return self.evaluationFunction(node)
+            if itercnt % agent_num != 0:  # ghost turn (Min node)
+                res = 1e10
+                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                    successor = node.generateSuccessor(
+                        itercnt % agent_num, act)
+                    res = min(res, alphabeta(successor, itercnt + 1, alpha, beta))
+                    beta = min(beta, res)
+                    if res <= alpha:
+                        break   # Prune this branch
+                return res
+            else:  # Pacman turn (Max node)
+                res = -1e10
+                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                    successor = node.generateSuccessor(
+                        itercnt % agent_num, act)
+                    res = max(res, alphabeta(successor, itercnt + 1, alpha, beta))
+                    alpha = max(alpha, res)
+                    if itercnt == 0:
+                        # add peak node to eval score list
+                        ActEvalScoreList.append(res)
+                    if res >= beta:
+                        break   # Prune this branch
+                return res
+
+        res = AlphaBeta(gameState, 0, -1e10, 1e10)
         # Get act with max eval score from act eval list to return
         return removeStopAct(gameState.getLegalActions(0))[ActEvalScoreList.index(max(ActEvalScoreList))]
 

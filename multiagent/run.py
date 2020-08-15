@@ -68,6 +68,10 @@ each step Monsters move. The food is so many.
 # pacman.main(
 #     'python pacman.py -r n=20,m=20,level=4 -p MinimaxAgent -g DirectionalGhost -f 0')
 
+# Using AlphaBetaAgent
+# pacman.main(
+#     'python pacman.py -r n=20,m=20,level=4 -p AlphaBetaAgent -g DirectionalGhost -f 0')
+
 #pacman.main('python pacman.py -p MinimaxAgent -g DirectionalGhost -f 0')
 
 # _---------------------------EXPLORER
