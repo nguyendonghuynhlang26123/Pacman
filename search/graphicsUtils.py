@@ -142,8 +142,10 @@ def wait_for_click():
 
 
 def draw_background():
-    corners = [(0, 0), (0, _canvas_ys), (_canvas_xs, _canvas_ys), (_canvas_xs, 0)]
-    polygon(corners, _bg_color, fillColor=_bg_color, filled=True, smoothed=False)
+    corners = [(0, 0), (0, _canvas_ys),
+               (_canvas_xs, _canvas_ys), (_canvas_xs, 0)]
+    polygon(corners, _bg_color, fillColor=_bg_color,
+            filled=True, smoothed=False)
 
 
 def _destroy_window(event=None):
@@ -160,7 +162,7 @@ def end_graphics():
     global _root_window, _canvas, _mouse_enabled
     from util import pause_getch
 
-    pause_getch()
+    # pause_getch()
     try:
         try:
             sleep(0.1)

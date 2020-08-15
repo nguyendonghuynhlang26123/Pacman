@@ -159,14 +159,14 @@ class Layout:
 def getLayout(name, back=2):
     if not os.path.exists("layout.py"):
         os.chdir("search/")
-    if name.endswith(".lay"):
+    if name.endswith(".txt"):
         layout = tryToLoad("layouts/" + name)
         if layout == None:
             layout = tryToLoad(name)
     else:
-        layout = tryToLoad("layouts/" + name + ".lay")
+        layout = tryToLoad("layouts/" + name + ".txt")
         if layout == None:
-            layout = tryToLoad(name + ".lay")
+            layout = tryToLoad(name + ".txt")
     if layout == None and back >= 0:
         curdir = os.path.abspath(".")
         os.chdir("..")
@@ -186,15 +186,16 @@ def generateMap(n, m, level=1, rate=0.7, numGhosts=0, numFoods=1):
         numGhosts = random.randint(0, int(n * m / 50)) + 1
     elif (level == 3 or level == 4) and numGhosts == 0:
         numGhosts = 2
-        numFoods = 20
+        numFoods = int(n*m / 3)
     elif level > 4 or level < 1:
         raise ("Invalid generate level")
     return Layout(generate_map(n, m, rate, numGhosts=numGhosts, numFoods=numFoods))
 
 
 def tryToLoad(fullname):
+    print(os.getcwd(), fullname)
     if not os.path.exists(fullname):
-        return tryToLoad
+        return None
     f = open(fullname)
     try:  # LOAD INPUT BASING ON GIVEN FORMAT
         lines = [line.strip() for line in f]

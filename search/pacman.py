@@ -364,11 +364,12 @@ class ClassicGameRules:
             self.lose(state, game)
 
     def win(self, state, game):
-        print("Pacman emerges victorious! Score: %d" % state.data.score)
+        print("Pacman emerges victorious! Score: %d" % (state.data.score))
         game.gameOver = True
 
     def lose(self, state, game):
-        print("Pacman died! Score: %d" % state.data.score)
+        print("Pacman died! Score: %d Eaten %d foods" % (state.data.score + 500,
+                                                         self.initialState.getNumFood() - game.state.getNumFood()))
         game.gameOver = True
 
     def getProgress(self, game):
@@ -801,7 +802,7 @@ def runGames(
 
     scores = [game.state.getScore() for game in games]
     wins = [game.state.isWin() for game in games]
-    print("Scores:       ", ", ".join([str(score) for score in scores]))
+    print("Scores:       ", ", ".join([str(score + 500) for score in scores]))
     print("RESULT:       ", ", ".join([["Loss", "Win"][int(w)] for w in wins]))
 
     return games

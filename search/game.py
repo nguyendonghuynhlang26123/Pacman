@@ -12,14 +12,6 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
-# game.py
-# -------
-# Licensing Information: Please do not distribute or publish solutions to this
-# project. You are free to use and extend these projects for educational
-# purposes. The Pacman AI projects were developed at UC Berkeley, primarily by
-# John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
-
 import util
 import time
 import os
@@ -180,7 +172,8 @@ class Grid:
 
         self.width = width
         self.height = height
-        self.data = [[initialValue for y in range(height)] for x in range(width)]
+        self.data = [[initialValue for y in range(
+            height)] for x in range(width)]
         if bitRepresentation:
             self._unpackBits(bitRepresentation)
 
@@ -487,7 +480,8 @@ class GameStateData:
                 continue
             if agentState.configuration == None:
                 continue
-            x, y = [int(i) for i in util.nearestPoint(agentState.configuration.pos)]
+            x, y = [int(i) for i in util.nearestPoint(
+                agentState.configuration.pos)]
             agent_dir = agentState.configuration.direction
             if agentState.isPacman:
                 map[x][y] = self._pacStr(agent_dir)
@@ -678,30 +672,31 @@ class Game:
             move_time = 0
             skip_action = False
             # Generate an observation of the state
-            if "observationFunction" in dir(agent):
-                self.mute(agentIndex)
-                if self.catchExceptions:
-                    try:
-                        timed_func = util.TimeoutFunction(
-                            agent.observationFunction,
-                            int(self.rules.getMoveTimeout(agentIndex)),
-                        )
-                        try:
-                            start_time = time.time()
-                            observation = timed_func(self.state.deepCopy())
-                        except util.TimeoutFunctionException:
-                            skip_action = True
-                        move_time += time.time() - start_time
-                        self.unmute()
-                    except Exception:
-                        self._agentCrash(agentIndex, quiet=False)
-                        self.unmute()
-                        return
-                else:
-                    observation = agent.observationFunction(self.state.deepCopy())
-                self.unmute()
-            else:
-                observation = self.state.deepCopy()
+            # if "observationFunction" in dir(agent):
+            #     self.mute(agentIndex)
+            #     if self.catchExceptions:
+            #         try:
+            #             timed_func = util.TimeoutFunction(
+            #                 agent.observationFunction,
+            #                 int(self.rules.getMoveTimeout(agentIndex)),
+            #             )
+            #             try:
+            #                 start_time = time.time()
+            #                 observation = timed_func(self.state.deepCopy())
+            #             except util.TimeoutFunctionException:
+            #                 skip_action = True
+            #             move_time += time.time() - start_time
+            #             self.unmute()
+            #         except Exception:
+            #             self._agentCrash(agentIndex, quiet=False)
+            #             self.unmute()
+            #             return
+            #     else:
+            #         observation = agent.observationFunction(
+            #             self.state.deepCopy())
+            #     self.unmute()
+            # else:
+            observation = self.state.deepCopy()
 
             # Solicit an action
             action = None
@@ -710,7 +705,8 @@ class Game:
                 try:
                     timed_func = util.TimeoutFunction(
                         agent.getAction,
-                        int(self.rules.getMoveTimeout(agentIndex)) - int(move_time),
+                        int(self.rules.getMoveTimeout(
+                            agentIndex)) - int(move_time),
                     )
                     try:
                         start_time = time.time()
@@ -770,7 +766,8 @@ class Game:
             self.moveHistory.append((agentIndex, action))
             if self.catchExceptions:
                 try:
-                    self.state = self.state.generateSuccessor(agentIndex, action)
+                    self.state = self.state.generateSuccessor(
+                        agentIndex, action)
                 except Exception:
                     self.mute(agentIndex)
                     self._agentCrash(agentIndex, quiet=True)
