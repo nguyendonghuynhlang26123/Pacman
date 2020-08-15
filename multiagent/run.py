@@ -14,19 +14,19 @@ LV1: Pac-man know the food’s position in map and monsters do not appear in map
 There is only one food in the map.
 """
 # Using BFS
-#pacman.main('python pacman.py -r 1 -p SearchAgent -a fn=bfs')
+#pacman.main('python pacman.py -r n=20,m=20,level=1 -p SearchAgent -a fn=bfs')
 
 # Using DFS
-#pacman.main('python pacman.py -r 1 -p SearchAgent -a fn=dfs')
+#pacman.main('python pacman.py -r n=20,m=20,level=1 -p SearchAgent -a fn=dfs')
 
 # using UCS
-#pacman.main('python pacman.py -r 1 -p SearchAgent -a fn=ucs')
+#pacman.main('python pacman.py -r n=20,m=20,level=1 -p SearchAgent -a fn=ucs')
 
 # Using A*
 # Manhattan heuristic
-#pacman.main('python pacman.py -r 1 -p SearchAgent -a fn=astar,heuristic=mHeur')
+#pacman.main('python pacman.py -r n=20,m=20,level=1 -p SearchAgent -a fn=astar,heuristic=mHeur')
 # Euclidean heuristic
-#pacman.main('python pacman.py -r 1 -p SearchAgent -a fn=astar,heuristic=eHeur')
+#pacman.main('python pacman.py -r n=20,m=20,level=1 -p SearchAgent -a fn=astar,heuristic=eHeur')
 
 
 """
@@ -35,12 +35,14 @@ through the monster or vice versa, game is over. There is still one food in the 
 and Pac-man know its position
 """
 # Using UCS
-#pacman.main('python pacman.py -r 2 -p SafeSearchAgent -g LazyGhost')
+#pacman.main('python pacman.py -r n=20,m=20,level=2 -p SafeSearchAgent -g LazyGhost')
 
 # Using A* - manhattan heuristic
-#pacman.main('python pacman.py -r 2 -p SafeSearchAgent -g LazyGhost -a fn=astar,heuristic=mHeur')
+# pacman.main(
+#     'python pacman.py -r n=20,m=20,level=2 -p SafeSearchAgent -g LazyGhost -a fn=astar,heuristic=mHeur')
 # - euclidean heuristic
-#pacman.main('python pacman.py -r 2 -p SafeSearchAgent -g LazyGhost -a fn=astar,heuristic=eHeur')
+# pacman.main(
+#     'python pacman.py -r n=20,m=20,level=2 -p SafeSearchAgent -g LazyGhost -a fn=astar,heuristic=eHeur')
 
 """
 Level 3: Pac-man cannot see the foods if they are outside Pacman’s nearest threestep. It means that Pac-man just only scan all the adjacent him (8 tiles x 3). There
@@ -57,11 +59,17 @@ passes him. It is ok for monsters go through each other. Each step Pacman go,
 each step Monsters move. The food is so many.
 """
 # Using Expectimax
-pacman.main('python pacman.py -r n=20,m=20,level=3 -p ExpectimaxAgent -g DirectionalGhost -f 0')
+# pacman.main(
+#     'python pacman.py -r n=20,m=20,level=4 -p ExpectimaxAgent -g DirectionalGhost -f 0')
 
 #pacman.main('python pacman.py -p ExpectimaxAgent -g DirectionalGhost -f 0')
 
 # Using Minimax
-#pacman.main('python pacman.py -r n=20,m=20,level=4 -p MinimaxAgent -g DirectionalGhost -f 0')
+# pacman.main(
+#     'python pacman.py -r n=20,m=20,level=4 -p MinimaxAgent -g DirectionalGhost -f 0')
 
 #pacman.main('python pacman.py -p MinimaxAgent -g DirectionalGhost -f 0')
+
+# _---------------------------EXPLORER
+pacman.main(
+    'python pacman.py -l mediumClassic -p ExplorerAgent -g DirectionalGhost')
