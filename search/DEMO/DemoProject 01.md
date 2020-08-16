@@ -170,7 +170,7 @@ RESULT:        Loss
 
 Comment: 
 
-- Pacmam Expectimax works well when there are foods around it (it only perceives foods around 3 steps from it) and it manage to escape the ghosts. 
+- Pacman Expectimax works well when there are foods around it (it only perceives foods around 3 steps from it) and it manage to escape the ghosts. 
 - However, when there are no foods around it or it cannot reach the food, Pacman behave weird and move uneffectively leading to huge reduction of scores
 
 This weakness can be seen in Map with less foods. Because the only things Pacman saw is food, hence it make pacman prioritize avoid them
