@@ -75,7 +75,8 @@ class SearchAgent(Agent):
 
         # Get the search function from the name and heuristic
         if fn not in dir(search):
-            raise AttributeError(fn + " is not a search function in search.py.")
+            raise AttributeError(
+                fn + " is not a search function in search.py.")
         func = getattr(search, fn)
         if "heuristic" not in func.__code__.co_varnames:
             print("[SearchAgent] using function " + fn)
@@ -89,7 +90,8 @@ class SearchAgent(Agent):
                 raise AttributeError(
                     heuristic + " is not a function in searchAgents.py or search.py."
                 )
-            print("[SearchAgent] using function %s and heuristic %s" % (fn, heuristic))
+            print("[SearchAgent] using function %s and heuristic %s" %
+                  (fn, heuristic))
             # Note: this bit of Python trickery combines the search algorithm and the heuristic
             self.searchFunction = lambda x: func(x, heuristic=heur)
 
@@ -117,7 +119,7 @@ class SearchAgent(Agent):
         self.actions = self.searchFunction(problem)  # Find a path
         totalCost = problem.getCostOfActions(self.actions)
         print(
-            "Path found with total cost of %d in %.1f seconds"
+            "Path found with total cost of %d in %f seconds"
             % (totalCost, time.time() - starttime)
         )
         if "_expanded" in dir(problem):
@@ -295,7 +297,8 @@ class AvoidLazyGhostProblem(PositionSearchProblem):
 class SafeSearchAgent(SearchAgent):
     def __init__(self, fn="uniformCostSearch", heuristic="manhattanHeuristic"):
         if fn not in dir(search):
-            raise AttributeError(fn + " is not a search function in search.py.")
+            raise AttributeError(
+                fn + " is not a search function in search.py.")
         func = getattr(search, fn)
         if func == search.bfs or func == search.dfs:
             raise AttributeError(
@@ -314,7 +317,8 @@ class SafeSearchAgent(SearchAgent):
                     heuristic + " is not a function in searchAgents.py or search.py."
                 )
             print(
-                "[SafeSearchAgent] using function %s and heuristic %s" % (fn, heuristic)
+                "[SafeSearchAgent] using function %s and heuristic %s" % (
+                    fn, heuristic)
             )
             self.searchFunction = lambda x: func(x, heuristic=heur)
 
@@ -338,127 +342,20 @@ def euclideanHeuristic(position, problem, info={}):
     return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
 
 
-#####################################################
-# This portion is incomplete.  Time to write code!  #
-#####################################################
-
-
-class FoodSearchProblem:
-    """
-    A search problem associated with finding the a path that collects all of the
-    food (dots) in a Pacman game.
-
-    A search state in this problem is a tuple ( pacmanPosition, foodGrid ) where
-      pacmanPosition: a tuple (x,y) of integers specifying Pacman's position
-      foodGrid:       a Grid (see game.py) of either True or False, specifying remaining food
-    """
-
-    def __init__(self, startingGameState):
-        self.start = (
-            startingGameState.getPacmanPosition(),
-            startingGameState.getFood(),
-        )
-        self.walls = startingGameState.getWalls()
-        self.startingGameState = startingGameState
-        self._expanded = 0  # DO NOT CHANGE
-        self.heuristicInfo = {}  # A dictionary for the heuristic to store information
-
-    def getStartState(self):
-        return self.start
-
-    def isGoalState(self, state):
-        return state[1].count() == 0
-
-    def getSuccessors(self, state):
-        "Returns successor states, the actions they require, and a cost of 1."
-        successors = []
-        self._expanded += 1  # DO NOT CHANGE
-        for direction in [
-            Directions.NORTH,
-            Directions.SOUTH,
-            Directions.EAST,
-            Directions.WEST,
-        ]:
-            x, y = state[0]
-            dx, dy = Actions.directionToVector(direction)
-            nextx, nexty = int(x + dx), int(y + dy)
-            if not self.walls[nextx][nexty]:
-                nextFood = state[1].copy()
-                nextFood[nextx][nexty] = False
-                successors.append((((nextx, nexty), nextFood), direction, 1))
-        return successors
-
-    def getCostOfActions(self, actions):
-        """Returns the cost of a particular sequence of actions.  If those actions
-        include an illegal move, return 999999"""
-        x, y = self.getStartState()[0]
-        cost = 0
-        for action in actions:
-            # figure out the next state and see whether it's legal
-            dx, dy = Actions.directionToVector(action)
-            x, y = int(x + dx), int(y + dy)
-            if self.walls[x][y]:
-                return 999999
-            cost += 1
-        return cost
-
-
-class AStarFoodSearchAgent(SearchAgent):
-    "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
-
-    def __init__(self):
-        self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
-        self.searchType = FoodSearchProblem
-
-
-def foodHeuristic(state, problem):
-    """
-    Your heuristic for the FoodSearchProblem goes here.
-
-    This heuristic must be consistent to ensure correctness.  First, try to come
-    up with an admissible heuristic; almost all admissible heuristics will be
-    consistent as well.
-
-    If using A* ever finds a solution that is worse uniform cost search finds,
-    your heuristic is *not* consistent, and probably not admissible!  On the
-    other hand, inadmissible or inconsistent heuristics may find optimal
-    solutions, so be careful.
-
-    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
-    (see game.py) of either True or False. You can call foodGrid.asList() to get
-    a list of food coordinates instead.
-
-    If you want access to info like walls, capsules, etc., you can query the
-    problem.  For example, problem.walls gives you a Grid of where the walls
-    are.
-
-    If you want to *store* information to be reused in other calls to the
-    heuristic, there is a dictionary called problem.heuristicInfo that you can
-    use. For example, if you only want to count the walls once and store that
-    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
-    Subsequent calls to this heuristic can access
-    problem.heuristicInfo['wallCount']
-    """
-    position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    foods = foodGrid.asList()
-    if not foods:
-        return 0
-    return max(
-        [mazeDistance(position, food, problem.startingGameState) for food in foods]
-    )
-
-
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
 
     def registerInitialState(self, state):
         self.actions = []
+        self.unreachable_food = 0
         currentState = state
-        while currentState.getFood().count() > 0:
+        while currentState.getFood().count() - self.unreachable_food > 0:
             nextPathSegment = self.findPathToClosestDot(
                 currentState
             )  # The missing piece
+            if nextPathSegment == None:
+                self.unreachable_food += 1
+                continue
             self.actions += nextPathSegment
             for action in nextPathSegment:
                 legal = currentState.getLegalActions()
@@ -478,9 +375,9 @@ class ClosestDotSearchAgent(SearchAgent):
         """
         # Here are some useful elements of the startState
         problem = AnyFoodSearchProblem(gameState)
-
         "*** YOUR CODE HERE ***"
-        return search.astar(problem)
+        # print(search.bfs(problem))
+        return self.searchFunction(problem)
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -501,7 +398,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
     def __init__(self, gameState):
         "Stores information from the gameState.  You don't need to change this."
         # Store the food for later reference
-        self.food = gameState.getFood()
+        # self.food = gameState.getFood()
+        self.goal = gameState.getClosestFood()
 
         # Store info for the PositionSearchProblem (no need to change this)
         self.walls = gameState.getWalls()
@@ -516,8 +414,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         """
 
         "*** YOUR CODE HERE ***"
-        foodList = self.food.asList()
-        return state in foodList
+        return state == self.goal
 
 
 def mazeDistance(point1, point2, gameState):

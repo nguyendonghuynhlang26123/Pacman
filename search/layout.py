@@ -175,7 +175,7 @@ def getLayout(name, back=2):
     return layout
 
 
-def generateMap(n, m, level=1, rate=0.7, numGhosts=0, numFoods=1):
+def generateMap(n, m, level=1, rate=0.7, numGhosts=0, foodRate=0.33):
     from GM import generate_map
 
     if level == 1:
@@ -186,7 +186,7 @@ def generateMap(n, m, level=1, rate=0.7, numGhosts=0, numFoods=1):
         numGhosts = random.randint(0, int(n * m / 50)) + 1
     elif (level == 3 or level == 4) and numGhosts == 0:
         numGhosts = 2
-        numFoods = int(n*m / 3)
+        numFoods = int(n*m * foodRate)
     elif level > 4 or level < 1:
         raise ("Invalid generate level")
     return Layout(generate_map(n, m, rate, numGhosts=numGhosts, numFoods=numFoods))

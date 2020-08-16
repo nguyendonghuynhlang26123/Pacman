@@ -24,69 +24,6 @@ def removeStopAct(List):
     return [_ for _ in List if _ != "Stop"]
 
 
-class ReflexAgent(Agent):
-    """
-      A reflex agent chooses an action at each choice point by examining
-      its alternatives via a state evaluation function.
-
-      The code below is provided as a guide.  You are welcome to change
-      it in any way you see fit, so long as you don't touch our method
-      headers.
-    """
-
-    def getAction(self, gameState):
-        """
-        You do not need to change this method, but you're welcome to.
-
-        getAction chooses among the best options according to the evaluation function.
-
-        Just like in the previous project, getAction takes a GameState and returns
-        some Directions.X for some X in the set {North, South, West, East, Stop}
-        """
-        # Collect legal moves and successor states
-        legalMoves = gameState.getLegalActions()
-
-        # Choose one of the best actions
-        scores = [self.evaluationFunction(
-            gameState, action) for action in legalMoves]
-        bestScore = max(scores)
-        bestIndices = [
-            index for index in range(len(scores)) if scores[index] == bestScore
-        ]
-        # Pick randomly among the best
-        chosenIndex = random.choice(bestIndices)
-
-        "Add more of your code here if you want to"
-
-        return legalMoves[chosenIndex]
-
-    def evaluationFunction(self, currentGameState, action):
-        """
-        Design a better evaluation function here.
-
-        The evaluation function takes in the current and proposed successor
-        GameStates (pacman.py) and returns a number, where higher numbers are better.
-
-        The code below extracts some useful information from the state, like the
-        remaining food (newFood) and Pacman position after moving (newPos).
-        newScaredTimes holds the number of moves that each ghost will remain
-        scared because of Pacman having eaten a power pellet.
-
-        Print out these variables to see what you're getting, then combine them
-        to create a masterful evaluation function.
-        """
-        # Useful information you can extract from a GameState (pacman.py)
-        successorGameState = currentGameState.generatePacmanSuccessor(action)
-        newPos = successorGameState.getPacmanPosition()
-        newFood = successorGameState.getFood()
-        newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [
-            ghostState.scaredTimer for ghostState in newGhostStates]
-
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
-
-
 def scoreEvaluationFunction(currentGameState):
     """
       This default evaluation function just returns the score of the state.
@@ -112,6 +49,9 @@ class MultiAgents(Agent):
       only partially specified, and designed to be extended.  Agent (game.py)
       is another abstract class.
     """
+
+    def getPacmanLegalActions(self, state):
+        return removeStopAct(state.getLegalActions(0))
 
     def __init__(self, evalFn='defaultEvaluationFunction', depth='2'):
         self.index = 0  # Pacman is always agent index 0
@@ -183,7 +123,7 @@ class MinimaxAgent(MultiAgents):
                 return res
             else:  # Pacman turn (Max node)
                 res = -1e10
-                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                for act in self.getPacmanLegalActions(node):
                     successor = node.generateSuccessor(
                         itercnt % agent_num, act)
                     res = max(res, minimax(successor, itercnt + 1))
@@ -211,7 +151,42 @@ class AlphaBetaAgent(MultiAgents):
         "*** YOUR CODE HERE ***"
         agent_num = gameState.getNumAgents()
         ActEvalScoreList = []
+        """remove stop action from movement list"""
+        def removeStopAct(List):
+            return [_ for _ in List if _ != 'Stop']
 
+        def AlphaBeta(node, itercnt, alpha, beta):
+            """Ending condition"""
+            if itercnt >= self.depth * agent_num or node.isWin() or node.isLose():
+                """return eval score get from result"""
+                return self.evaluationFunction(node)
+            if itercnt % agent_num != 0:  # ghost turn (Min node)
+                res = 1e10
+                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                    successor = node.generateSuccessor(
+                        itercnt % agent_num, act)
+                    res = min(res, AlphaBeta(
+                        successor, itercnt + 1, alpha, beta))
+                    beta = min(beta, res)
+                    if res <= alpha:
+                        break   # Prune this branch
+                return res
+            else:  # Pacman turn (Max node)
+                res = -1e10
+                for act in self.getPacmanLegalActions(node):
+                    successor = node.generateSuccessor(
+                        itercnt % agent_num, act)
+                    res = max(res, AlphaBeta(
+                        successor, itercnt + 1, alpha, beta))
+                    alpha = max(alpha, res)
+                    if itercnt == 0:
+                        # add peak node to eval score list
+                        ActEvalScoreList.append(res)
+                    if res >= beta:
+                        break   # Prune this branch
+                return res
+
+        AlphaBeta(gameState, 0, -1e10, 1e10)
         # Get act with max eval score from act eval list to return
         return removeStopAct(gameState.getLegalActions(0))[
             ActEvalScoreList.index(max(ActEvalScoreList))
@@ -251,7 +226,7 @@ class ExpectimaxAgent(MultiAgents):
                 return avgscore
             else:  # Pacman max
                 res = -1e10
-                for act in removeStopAct(node.getLegalActions(itercnt % agent_num)):
+                for act in self.getPacmanLegalActions(node):
                     successor = node.generateSuccessor(
                         itercnt % agent_num, act)
                     res = max(res, expectimax(successor, itercnt + 1))
@@ -266,15 +241,121 @@ class ExpectimaxAgent(MultiAgents):
 
 
 class ExplorerAgent(ExpectimaxAgent):
-    def __init__(self, miracle_rate=0.001, sight='3'):
+    def __init__(self, miracle_rate=0.001, sight='3', evalFn='custom', despair='400', depth='3'):
         self.guide = []
+        self.evalFn = util.lookup(evalFn, globals())
+        self.miracle_turns = 0
+        self.miracle_rate = miracle_rate
+        self.explored = dict({})
+        self.count = 0
+        self.despair = int(despair)
+        self.fear = 0
+        self.unreachableFoods = set({})
+        self.sight = int(sight)
+        super(ExplorerAgent, self).__init__(depth=depth)
+
+    def exploreAction(self, gameState):
+        """
+            Return an action prioritize to the uneplored square
+        """
+        result = []
+        pac_pos = gameState.getPacmanPosition()
+        legalActions = removeStopAct(gameState.getLegalActions(0))
+
+        new_positions = [(a, Actions.getSuccessor(
+            pac_pos, a)) for a in legalActions]
+
+        result = [act for (act, pos)
+                  in new_positions if pos not in self.explored]
+        if result == []:
+            current_cost = [(self.explored[pos], act)
+                            for (act, pos) in new_positions]
+            return min(current_cost)[1]
+
+        if result == []:
+            result = legalActions
+        return random.choice(result)
+
+    # def getPacmanLegalActions(self, gameState):
+    #     """
+    #         Return an action prioritize to the uneplored square
+    #         Overide Multiple Agents actions methods
+    #     """
+    #     return []
+
+    def getAction(self, gameState):
+        perceived_ghosts = gameState.getGhostSurroundingPacman(
+            radius=self.sight)
+        perceived_foods = gameState.getFoodSurroundingPacman(
+            radius=self.sight)
+
+        closest_Food = gameState.getClosestFood()
+        self.count += 1
+        self.explored[gameState.getPacmanPosition()] = self.count
+
+        if (len(perceived_ghosts) == 0 and len(perceived_foods) == 0):
+            "MIRACLE: "
+            if len(self.guide) > 0 or (self.fear >= self.despair and random.random() > self.miracle_rate):
+                print("MIRACLE")
+                self.fear = 0
+                next_step = self.miracleGuide(gameState)
+                if next_step is not None:
+                    return next_step
+            # print("random")
+            self.fear += 1
+            return self.exploreAction(gameState)
+        elif len(perceived_ghosts) == 0:
+            "SAW ONLY FOOD"
+            self.guide = []
+            #print("F", perceived_foods)
+            if closest_Food != None:
+                path = shortestPathFrom(
+                    gameState.getPacmanPosition(), closest_Food, gameState)
+                if path != None:
+                    return path[0]
+            return self.exploreAction(gameState)
+        elif len(perceived_foods) == 0:
+            "SAW ONLY GHOST"
+            self.guide = []
+            # print("GHOST")
+            self.evaluationFunction = self.ghostEval
+        else:
+            "SAW BOTH FOOD AND GHOST"
+            self.guide = []
+            # print("F&G")
+            self.evaluationFunction = self.evalFn
+
+        return super(ExplorerAgent, self).getAction(gameState)
+
+    def miracleGuide(self, gameState):
+        closest_Food = gameState.getClosestFood()
+        if self.guide == [] and closest_Food not in self.unreachableFoods:
+            self.guide = shortestPathFrom(
+                gameState.getPacmanPosition(), closest_Food, gameState
+            )
+            if self.guide is None:
+                self.unreachableFoods.add(closest_Food)
+                self.guide = []
+        return self.guide.pop(0) if self.guide != [] else None
+
+
+class ExplorerAgentII(AlphaBetaAgent):
+    """
+        THIS version of explorer using AB pruning algorithm instead of Expectimax
+    """
+
+    def __init__(self, miracle_rate=0.001, sight='3', evalFn='custom', depth='3', despairTime='100'):
+        self.guide = []
+        self.evalFn = util.lookup(evalFn, globals())
         self.miracle_turns = 0
         self.miracle_rate = miracle_rate
         self.explored = dict({})
         self.count = 0
         self.unreachableFoods = set({})
         self.sight = int(sight)
-        super(ExplorerAgent, self).__init__()
+        self.despair = int(despairTime)
+        self.fear = 0
+        super(ExplorerAgentII, self).__init__(depth=depth)
 
     def exploreAction(self, gameState):
         """
@@ -311,17 +392,19 @@ class ExplorerAgent(ExpectimaxAgent):
 
         if (len(perceived_ghosts) == 0 and len(perceived_foods) == 0):
             "MIRACLE: "
-            if len(self.guide) > 0 or (gameState.getScore() < 0 and random.random() > self.miracle_rate):
+            if len(self.guide) > 0 or (self.fear >= self.despair and random.random() > self.miracle_rate):
                 print("MIRACLE")
+                self.fear = 0
                 next_step = self.miracleGuide(gameState)
                 if next_step is not None:
                     return next_step
-            print("random")
+            # print("random")
+            self.fear += 1
             return self.exploreAction(gameState)
         elif len(perceived_ghosts) == 0:
             "SAW ONLY FOOD"
             self.guide = []
-            print("F", perceived_foods)
+            #print("F", perceived_foods)
             if closest_Food != None:
                 path = shortestPathFrom(
                     gameState.getPacmanPosition(), closest_Food, gameState)
@@ -331,15 +414,15 @@ class ExplorerAgent(ExpectimaxAgent):
         elif len(perceived_foods) == 0:
             "SAW ONLY GHOST"
             self.guide = []
-            print("GHOST")
+            # print("GHOST")
             self.evaluationFunction = self.ghostEval
         else:
             "SAW BOTH FOOD AND GHOST"
             self.guide = []
-            print("F&G")
-            self.evaluationFunction = default
+            # print("F&G")
+            self.evaluationFunction = self.evalFn
 
-        return super(ExplorerAgent, self).getAction(gameState)
+        return super(ExplorerAgentII, self).getAction(gameState)
 
     def miracleGuide(self, gameState):
         closest_Food = gameState.getClosestFood()
@@ -351,53 +434,6 @@ class ExplorerAgent(ExpectimaxAgent):
                 self.unreachableFoods.add(closest_Food)
                 self.guide = []
         return self.guide.pop(0) if self.guide != [] else None
-
-
-def betterEvaluationFunction(currentGameState):
-    def foodheuristic(gameState):
-        food_dis = []
-        # Find closest food using manhattan distance
-        for food in gameState.getFood().asList():
-            food_dis.append(
-                1 / manhattanDistance(gameState.getPacmanPosition(), food))
-        if len(food_dis) > 0:
-            return max(food_dis)
-        else:
-            return 0
-
-    # This is for when pacman is out of hope and he must end his life as soon as possible to reserve his point
-    # Testing...
-    def bestendingheuristic(gameState):
-        ghost_dis = 1e6
-        # Find closest ghost using manhattan distance
-        for ghost in gameState.getGhostStates():
-            ghost_dis = min(
-                manhattanDistance(
-                    gameState.getPacmanPosition(), ghost.getPosition()),
-                ghost_dis,
-            )
-        score = -pow(ghost_dis, 2)
-        if gameState.isLose():
-            score = 1e6
-        return score
-
-    def distanceheuristic(gameState):
-        ghost_dis = []
-        # Find closest food using manhattan distance
-        for g in gameState.getGhostStates():
-            ghost_dis.append(
-                manhattanDistance(
-                    gameState.getPacmanPosition(), g.getPosition())
-            )
-        if len(ghost_dis) > 0:
-            return sum(ghost_dis) / len(ghost_dis)
-        else:
-            return 0
-
-    score = currentGameState.getScore()
-    foodscore = foodheuristic(currentGameState)
-    ghostscore = distanceheuristic(currentGameState)
-    return score + foodscore + ghostscore
 
 
 def customEvaluationFunction(curGameState):
@@ -467,4 +503,3 @@ def defaultEvaluationFunction(currentGameState):
 # Abbreviation
 default = defaultEvaluationFunction     # Use this eval func
 custom = customEvaluationFunction
-better = betterEvaluationFunction
