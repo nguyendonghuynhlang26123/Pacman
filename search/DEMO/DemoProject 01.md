@@ -4,7 +4,7 @@
 
 ### BFS:
 
-![demo_lv1_BFS](C:\Users\lenovo\Desktop\DEMO\demo_lv1_BFS.gif)
+![](demo_lv1_BFS.gif)
 
 **Result**: 
 
@@ -28,7 +28,7 @@ Comment:
 
 
 
-![demo_lv1_DFS](C:\Users\lenovo\Desktop\DEMO\demo_lv1_DFS.gif)
+![](demo_lv1_DFS.gif)
 
 Result: 
 
@@ -48,7 +48,7 @@ Comments:
 
 ### UCS path cost = 1 for every nodes
 
-![demo_lv1_UCS](C:\Users\lenovo\Desktop\DEMO\demo_lv1_UCS.gif)
+![](demo_lv1_UCS.gif)
 
 Result:
 
@@ -70,7 +70,7 @@ Comment:
 
 ### A*:
 
-![demo_lv1_UCS](C:\Users\lenovo\Desktop\DEMO\demo_lv1_AStar.gif)
+![demo_lv1_Astar](demo_lv1_Astar.gif)
 
 Result:
 
@@ -92,7 +92,7 @@ Comments:
 
 ### GBFS: 
 
-![demo_lv1_UCS](C:\Users\lenovo\Desktop\DEMO\demo_lv1_GBFS.gif)
+![](demo_lv1_GBFS.gif)
 
 Result: 
 
@@ -113,7 +113,7 @@ Comment:
 
 ## LV2: Safe Search Agent using Astar
 
-![demo_lv2_UCS](demo_lv2.gif)
+![](demo_lv2.gif)
 
 Result:
 
@@ -129,11 +129,11 @@ RESULT:        Win
 
 Trickier: 
 
-![demo_lv2_UCS](demo_lv2_2.gif)
+![](demo_lv2_2.gif)
 
 or Food is trapped and Pacman has no choice
 
-![demo_lv2_UCS](demo_lv2_3.gif)
+![](demo_lv2_3.gif)
 
 ```
 [SafeSearchAgent] using function astar and heuristic manhattanHeuristic
@@ -158,7 +158,7 @@ Pacman uses the Astar and priority queue as the frontier. The cost of colliding 
 
 - By using default evaluation function (which evalulate the score basing on the average distance between Pacman and ALL of the ghosts, distance to nearby foods, and current score)
 
-![demo_lv3_Expectimax](demo_lv3_Expectimax.gif)
+![](demo_lv3_Expectimax.gif)
 
 Result:  
 
@@ -183,7 +183,7 @@ A similar pattern can be witnessed in other adversarial search.
 
 This problem can be solved by using Explorer who ignores the ghosts outside the sight of it and performs local search to explore the map!
 
-![demo_lv3_Explorer_Stuck](demo_lv3_Explorer_Stuck.gif)
+![](demo_lv3_Explorer_Stuck.gif)
 
 Result:
 
@@ -200,7 +200,7 @@ RESULT:        Win
 
 ### Using Expectimax with custom Evaluation function:
 
-![demo_lv4_Expectimax](demo_lv4_Expectimax.gif)
+![](demo_lv4_Expectimax.gif)
 
 Result: 
 
@@ -214,7 +214,7 @@ RESULT:        Loss
 - Since the food is so many and ghosts are always chasing Pacman, Expectimax and other adversarial search agents works well in the situation.
 - However, if pacman survives till the late game, Pacman is good at surviving but it makes no progress in eating foods
 
-![demo_lv4_Expectimax_loop](demo_lv4_Expectimax_loop.gif)
+![](demo_lv4_Expectimax_loop.gif)
 
 ### Explorer Agent:
 
